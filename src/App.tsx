@@ -1,25 +1,32 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useCallback, useEffect } from "react";
+import "./App.css";
+import { startSocketIO } from "./services/socket.io/socket.io";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { HomePage } from "./pages/homePage/homePage";
+import GameRoom from "./pages/room/gameRoom";
+import { Provider } from "react-redux";
+import store from './redux/reduxStore';
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <HomePage />,
+  },
+  {
+    path: "/room/:roomName",
+    element: <GameRoom />,
+  },
+]);
 
 function App() {
+  useEffect(() => {
+    startSocketIO(store);
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Provider store={store}>
+      <RouterProvider router={router} />
+    </Provider>
   );
 }
 
