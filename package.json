@@ -20,11 +20,11 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "cross-env ENVIRONMENT='prod' node ./build/server.js",
+    "start": "npx cross-env ENVIRONMENT='prod' node ./build/server.js",
     "start-dev": "npm run build && cross-env ENVIRONMENT='dev' npx ts-node ./server.ts",
     "start-server": "npx ts-node ./server.ts",
     "start-client": "react-scripts start",
-    "build": "cross-env BUILD_PATH='./build/client' react-scripts build && npx tsc",
+    "build": "npx cross-env BUILD_PATH='./build/client' react-scripts build && npx tsc",
     "test": "jest",
     "eject": "react-scripts eject",
     "watch": "npm-watch"
