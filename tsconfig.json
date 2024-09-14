@@ -3,32 +3,25 @@
     // these options are overrides used only by ts-node
     // same as the --compilerOptions flag and the TS_NODE_COMPILER_OPTIONS environment variable
     "compilerOptions": {
-      "module": "CommonJS",
-      "target": "ES6",
+      "module": "Node16",
+      "target": "ES6"
     }
   },
   "compilerOptions": {
-    "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["esnext"],
+    "isolatedModules": true,
+    "moduleResolution": "NodeNext",
+    "target": "ES2015",
+    "module": "NodeNext",
+    "outDir": "./build",
+    "esModuleInterop": true,
     "allowJs": true,
     "skipLibCheck": true,
-    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
-    "module": "esnext",
-    "moduleResolution": "node",
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
+    "jsx": "react-jsx"
   },
-  "include": [
-    "src"
-, "server.js"  ]
+  "include": ["socketFunctions.ts", "src", "server.ts"]
 }

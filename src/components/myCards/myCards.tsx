@@ -188,7 +188,6 @@ const flex: React.CSSProperties = {
 const container: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
-  alignItems: "center",
 };
 
 const cardContainer: React.CSSProperties = {

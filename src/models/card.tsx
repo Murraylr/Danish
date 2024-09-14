@@ -51,8 +51,6 @@ import TenOfDiamonds from "../components/cardImages/diamonds_10";
 import JackOfDiamonds from "../components/cardImages/diamonds_jack";
 import QueenOfDiamonds from "../components/cardImages/diamonds_queen";
 import KingOfDiamonds from "../components/cardImages/diamonds_king";
-import { JSX } from "react/jsx-runtime";
-import { on } from "events";
 
 export enum CardNumber {
   Ace = "Ace",

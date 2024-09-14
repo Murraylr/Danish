@@ -31,6 +31,11 @@ app.use(
   })
 );
 
+var clientPath =
+  process.env.ENVIRONMENT === "prod"
+    ? path.join(__dirname, "client")
+    : path.join(__dirname, "build", "client");
+
 app.use((req, res, next) => {
   if (/(.ico|.js|.css|.jpg|.png|.map)$/i.test(req.path)) {
     next();
@@ -50,10 +55,17 @@ app.use((req, res, next) => {
         req.session.playerId = uuidv4();
       });
     }
-    res.sendFile(path.join(__dirname, "build", "index.html"));
+    res.sendFile(path.join(clientPath, "index.html"));
   }
 });
-app.use(express.static(path.join(__dirname, "./build")));
+
+console.log("Environment: ", process.env.ENVIRONMENT);
+
+
+
+console.log("Client path: ", clientPath);
+
+app.use(express.static(clientPath));
 
 const server = createServer(app);
 
