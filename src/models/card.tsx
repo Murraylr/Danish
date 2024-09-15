@@ -113,13 +113,16 @@ export class Card {
     }
 
     if (this.isNominating(onCards)) {
+      console.log("Player is nominated, playing ", this.card);
       return this.isMagicCard;
     }
 
     if (topCard.card === CardNumber.Seven || topCard.card === CardNumber.Nine) {
+      console.log("Top card is power card, playing ", this.card);
       return this.getNumber() <= topCard.getNumber();
     }
 
+    console.log('Playing ', this.card,' on top card: ', topCard.card);
     return this.getNumber() >= topCard.getNumber();
   }
 
@@ -144,7 +147,7 @@ export class Card {
       return true;
     }
 
-    let topCard = onCards[onCards.length - 1];
+    let topCard = this.getTopCard(onCards);
     if (topCard.card !== CardNumber.Ace) {
       return false;
     }
@@ -358,9 +361,11 @@ export class Eight extends Card {
     }
 
     if (topCard.card === CardNumber.Ace && !(topCard as Ace)?.isOne) {
+      console.log("Eight is an ace, playing ", this.card);
       return CardEvent.Nominate
     }
 
+    console.log("Playing ", this.card, " on top card: ", topCard.card);
     return CardEvent.Next;
   }
 

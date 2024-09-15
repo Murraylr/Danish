@@ -63,6 +63,7 @@ export function InitialiseConnection(
         player = new Player(playerId, roomModel.playerName!);
         room.addPlayer(player);
       }
+      roomModel.playerId = player.playerId;
 
       socket.join(roomModel.roomName);
       socket.join(`${roomModel.roomName}/${playerId}`);
@@ -155,6 +156,10 @@ export function InitialiseConnection(
       if (!player) {
         return;
       }
+      io.to(getMeModel.roomName).emit(
+        SocketEvents.GameUpdate,
+        gameRoom?.gameManager.getGameState()
+      );
       io.to(`${getMeModel.roomName}/${getMeModel.playerId}`).emit(
         SocketEvents.PlayerUpdate,
         gameRoom?.gameManager.getPlayerState(player)

@@ -603,6 +603,46 @@ describe("GameManager", () => {
         expect(gameManager.currentPlayerIndex).toBe(2);
         expect(gameManager.deck.length).toBe(4);
     });
+
+    it('Ace on two fives on a nine', () => {
+        gameManager.players.get("2")!.hand = [new Ace(Suit.Clubs)];
+        gameManager.discardPile = [new Nine(Suit.Hearts), new Five(Suit.Clubs), new Five(Suit.Diamonds)];
+
+        gameManager.playCards(gameManager.players.get("2")!, [new Ace(Suit.Clubs)]);
+
+        let ace = gameManager.discardPile[gameManager.discardPile.length - 1] as Ace;
+
+        expect(ace.isOne).toBe(false);
+    });
+
+    it('Ace then 8 should not allow seven', () => {
+      gameManager.players.get("2")!.hand = [new Ace(Suit.Clubs), new Seven(Suit.Clubs), new Two(Suit.Clubs)];
+        gameManager.players.get("1")!.hand = [new Ace(Suit.Clubs), new Eight(Suit.Clubs)];
+        gameManager.players.get("3")!.hand = [new Ace(Suit.Clubs), new Eight(Suit.Clubs)];
+
+        gameManager.playCards(gameManager.players.get("2")!, [new Ace(Suit.Clubs)]);
+        expect(gameManager.players.get("2")!.nominating).toBe(true);
+        expect(gameManager.canPlay(gameManager.players.get("3")!, [new Eight(Suit.Clubs)])).toBe(false);
+
+        gameManager.handleNomination(gameManager.players.get("2")!, "1");
+        expect(gameManager.players.get("2")!.nominating).toBe(false);
+        expect(gameManager.players.get("1")!.nominated).toBe(true);
+        
+        expect(gameManager.canPlay(gameManager.players.get("3")!, [new Eight(Suit.Clubs)])).toBe(false);
+        expect(gameManager.canPlay(gameManager.players.get("1")!, [new Eight(Suit.Clubs)])).toBe(true);
+
+        gameManager.playCards(gameManager.players.get("1")!, [new Eight(Suit.Clubs)]);
+
+        expect(gameManager.players.get("1")!.nominated).toBe(false);
+        expect(gameManager.players.get("1")!.nominating).toBe(true);
+
+        gameManager.handleNomination(gameManager.players.get("1")!, "2");
+
+        expect(gameManager.players.get("1")!.nominating).toBe(false);
+        expect(gameManager.players.get("2")!.nominated).toBe(true);
+        expect(gameManager.canPlay(gameManager.players.get("2")!, [new Seven(Suit.Clubs)])).toBe(false);
+        expect(gameManager.canPlay(gameManager.players.get("2")!, [new Ace(Suit.Clubs)])).toBe(true);
+    })
   });
 
   describe('getTopDiscard', () => {

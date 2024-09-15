@@ -51,6 +51,7 @@ export class GameManager {
     this.createDeck();
 
     if (this.players.size > 3) {
+      console.log('Creating second deck.')
       this.createDeck();
     }
 
@@ -230,6 +231,7 @@ export class GameManager {
   isPlayersTurn(playerId: string) {
     let player = this.players.get(playerId);
     if (!player) {
+      console.log('Player with id: ', playerId, ' not found.');
       return false;
     }
 
@@ -237,23 +239,28 @@ export class GameManager {
       return true;
     }
 
+    console.log('Player with id: ', playerId, ' not in current player list. Current player list', this.getCurrentPlayer());
     return false;
   }
 
   canPlay(player: Player, cards: Card[]) {
     if (!this.isPlayersTurn(player.playerId)) {
+      console.log('Cannot Play: Not players turn.');
       return false;
     }
 
     if (player.nominating) {
+      console.log('Cannot Play: Player needs to nominate.');
       return false;
     }
 
     if (!cards || cards.length === 0) {
+      console.log('Cannot Play: No cards selected.');
       return false;
     }
 
     if (uniqBy(cards, (card) => card.getNumber())?.length > 1) {
+      console.log('Cannot Play: More than one number selected.');
       return false;
     }
 
@@ -293,6 +300,7 @@ export class GameManager {
     this.currentPlayerIndex = this.playerArray().findIndex(p => p.playerId === player.playerId);
     this.changeAcesToOne(cardsToPlay);
     let cardEvent = cardsToPlay[0]!.getCardEvent(this.discardPile);
+    console.log('Card Event: ', cardEvent);
     let previousPile = [...this.discardPile];
 
 
@@ -331,8 +339,9 @@ export class GameManager {
       return;
     }
 
-    if (this.discardPile[this.discardPile.length - 1].isPowerCard && cardsToPlay[0].card === CardNumber.Ace) {
+    if (this.getTopDiscard()?.isPowerCard && cardsToPlay[0].card === CardNumber.Ace) {
       for (let card of cardsToPlay) {
+        console.log('Aces are ones.');
         let ace = card as Ace;
         ace.isOne = true;
       }

@@ -74,6 +74,9 @@ const io = new Server(server, {
     origin: "http://localhost:3001",
     credentials: true,
   },
+  connectionStateRecovery: {
+    maxDisconnectionDuration: 2 * 60 * 1000,
+  }
 });
 io.engine.use(sessionMiddleware);
 
