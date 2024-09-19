@@ -9,7 +9,7 @@ export const selectRoomModel = () => useSelector((state: State): JoinRoomModel |
     let params = useParams();
     
     let roomName = params.roomName || state.room.roomName;
-    let playerName = state.playerState?.me?.name || SessionStorage.GetPlayerName();
+    let playerName = state.playerState?.playerState?.me?.name || SessionStorage.GetPlayerName();
 
     return {
         playerName: playerName,

@@ -2,7 +2,6 @@
 import io, { Socket } from "socket.io-client";
 import { SocketEvents } from "../../models/socketEvents";
 import { selectRoomModel } from "../../redux/combineSelectors";
-import { useDispatch } from "react-redux";
 import { messageStateActions } from "../../redux/messagesState/messagesStateSlice";
 import { ChatMessage } from "../../models/chatMessage";
 import { GameState } from "../../models/gameState";
@@ -10,30 +9,24 @@ import { gameStateActions } from "../../redux/gameState/gameStateSlice";
 import { playerStateActions } from "../../redux/playerState/playerStateSlice";
 import { GetMeModel, PlayerState } from "../../models/playerUpdate";
 import { EnhancedStore } from "@reduxjs/toolkit";
-import { SessionStorage } from "../sessionStorage/sessionStorage";
-import { Cookie } from "express-session";
-import { Room } from "../../models/room";
 import { roomStateActions } from "../../redux/roomState/roomStateSlice";
 import { JoinRoomModel } from "../../models/joinRoomModel";
+import { PlayerWonModel } from "../../models/playerWonModel";
+import { CannotPlayCard } from "../../models/cannotPlayCardModel";
 const isProd = process.env.NODE_ENV === "production";
 
-declare global {
-  namespace SocketIOClient {
-    interface Socket {
-      recovered?: boolean;
-    }
-  }
-}
 
 const opts: any = {
   transports: ["websocket"],
-  withCredentials: true,
-
+  // withCredentials: true,
+  forceNew: true,
 };
 
-const socket = io(opts && {
-  forceNew: true,
-});
+const socket = io(opts);
+
+// const socket = io('http://localhost:3000', opts && {
+//   forceNew: true,
+// });
 
 // export the function to connect and use socket IO:
 export const startSocketIO = (store: EnhancedStore<any, any, any>) => {
@@ -52,6 +45,7 @@ export const startSocketIO = (store: EnhancedStore<any, any, any>) => {
     });
 
     socket.on(SocketEvents.RoomJoined, (room: JoinRoomModel) => {
+      console.log("Room joined: ", room);
       const getMeModel: GetMeModel = {
         playerId: room.playerId,
         roomName: room.roomName,
@@ -69,6 +63,14 @@ export const startSocketIO = (store: EnhancedStore<any, any, any>) => {
     socket.on(SocketEvents.PlayerUpdate, (playerState: PlayerState) => {
       console.log('Updating player state: ', playerState);
       dispatch(playerStateActions.setPlayerState(playerState));
+    });
+
+    socket.on(SocketEvents.CannotPlayCard, (cannotPlayCardModel: CannotPlayCard) => {
+      console.log('Cannot play card: ', cannotPlayCardModel);
+      dispatch(playerStateActions.setInvalidPlay(cannotPlayCardModel));
+      setTimeout(() => {
+        dispatch(playerStateActions.setInvalidPlay(null));
+      });
     });
 
     return () => {

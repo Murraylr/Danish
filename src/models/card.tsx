@@ -106,24 +106,45 @@ export class Card {
     return 0;
   }
 
-  canPlay(onCards: Card[]): boolean {
+  getName(): string {
+    return this.card.toString();
+  }
+
+  canPlay(onCards: Card[], onFailCallback?: (message: string) => void) {
     let topCard = this.getTopCard(onCards);
     if (topCard === null) {
       return true;
     }
 
     if (this.isNominating(onCards)) {
+      if (!this.isMagicCard) {
+        onFailCallback &&
+          onFailCallback("You have been nominated to play a magic card.");
+        return false;
+      }
       console.log("Player is nominated, playing ", this.card);
       return this.isMagicCard;
     }
 
     if (topCard.card === CardNumber.Seven || topCard.card === CardNumber.Nine) {
+      let canPlay = this.getNumber() <= topCard.getNumber();
       console.log("Top card is power card, playing ", this.card);
-      return this.getNumber() <= topCard.getNumber();
+      if (!canPlay && onFailCallback) {
+        onFailCallback(
+          `Cannot play a ${this.getName()} on a ${this.getName()}. You must play lower or equal.`
+        );
+      }
+      return canPlay;
     }
 
-    console.log('Playing ', this.card,' on top card: ', topCard.card);
-    return this.getNumber() >= topCard.getNumber();
+    console.log("Playing ", this.card, " on top card: ", topCard.card);
+    let canPlay = this.getNumber() >= topCard.getNumber();
+    if (!canPlay && onFailCallback) {
+      onFailCallback(
+        `Cannot play a ${this.getName()} on a ${this.getName()}. You must play higher or equal or a magic card.`
+      );
+    }
+    return canPlay;
   }
 
   getTopCard(onCards: Card[]): Card | null {
@@ -362,7 +383,7 @@ export class Eight extends Card {
 
     if (topCard.card === CardNumber.Ace && !(topCard as Ace)?.isOne) {
       console.log("Eight is an ace, playing ", this.card);
-      return CardEvent.Nominate
+      return CardEvent.Nominate;
     }
 
     console.log("Playing ", this.card, " on top card: ", topCard.card);

@@ -12,6 +12,8 @@ export class Player {
   bestCards: Card[] = [];
   nominating = false;
   nominated = false;
+  inGame = false;
+  finished = false;
 
   constructor(playerId: string, name: string) {
     this.playerId = playerId;

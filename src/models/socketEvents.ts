@@ -16,6 +16,7 @@ export enum SocketEvents {
     PlayerUpdate = "playerUpdate",
 
     PlayCard = "playCard",
+    CannotPlayCard = "cannotPlayCard",
 
     GetMe = "getMe",
 
@@ -25,4 +26,6 @@ export enum SocketEvents {
     PickUp = "pickUp",
 
     PlayerWon = "playerWon",
+
+    SetTest = "setTest",
 }

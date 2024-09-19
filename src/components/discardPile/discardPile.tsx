@@ -9,7 +9,6 @@ interface DiscardPileProps {
 const DiscardPile: React.FC<DiscardPileProps> = ({ cards }) => {
   return (
     <div className="discard-pile" style={discardPileStyle}>
-      <h2>Discard Pile</h2>
       <div style={pileContainer}>
         {cards.map((card, index) => {
           let style: React.CSSProperties = {
@@ -33,10 +32,7 @@ const pileContainer: React.CSSProperties = {
 };
 
 const discardPileStyle: React.CSSProperties = {
-  border: "1px solid #ccc",
-  borderRadius: "5px",
   padding: "10px",
-  backgroundColor: "#f5f5f5",
   marginBottom: "20px",
   height: "30vh",
   width: "100%",

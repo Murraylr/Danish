@@ -12,6 +12,7 @@ import { Turn } from "../../models/turn";
 import { every, uniqBy } from "lodash";
 import { Nomination } from "../../models/nomination";
 import { PickUpModel } from "../../models/pickUpModel";
+import { Button, Flex } from "antd";
 
 interface MyCardsProps {
   cards: Card[];
@@ -110,79 +111,74 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
     let pickupModel: PickUpModel = {
       playerId: playerState.me.playerId,
       roomName: room.roomName,
-    }
+    };
     socket.emit(SocketEvents.PickUp, pickupModel);
-  }, [playerState?.me?.playerId, room?.roomName])
+  }, [playerState?.me?.playerId, room?.roomName]);
 
   if (!playerState || !playerState.me) {
     return null;
   }
 
   return (
-    <div style={container}>
-      <h2>My Cards</h2>
+    <Flex vertical>
       <div>{gameState.getStatusMessage(playerState.me)}</div>
       {!playerState.isNominating && (
-        <div>
-          <button onClick={onClick}>Confirm Selection</button>
-        </div>
+        <Button type="primary" onClick={onClick}>
+          Confirm Selection
+        </Button>
       )}
-      {gameState.discardPile.length && (
-        <div>
-          <button onClick={pickUp}>Pickup</button>
-        </div>
-      )}
-      {playerState.isNominating && (
-        <div>
-          {gameState.players.map((p) => {
-            let nomination: Nomination = {
-              nominatedPlayerId: p?.playerId,
-              playerId: playerState?.me?.playerId,
-              roomName: room?.roomName,
-            };
-            return (
-              <button
-                onClick={() =>
-                  socket.emit(SocketEvents.SelectNomination, nomination)
-                }
-              >
-                {p.name}
-              </button>
-            );
-          })}
-        </div>
-      )}
-      <div style={{ ...cardContainer, ...flex }}>
-        <div style={handContainer}>
+      <Flex>
+        {gameState.discardPile.length > 0 && (
+          <Button onClick={pickUp} danger>
+            Pickup
+          </Button>
+        )}
+        {playerState.isNominating && (
+          <div>
+            {gameState.players.map((p) => {
+              let nomination: Nomination = {
+                nominatedPlayerId: p?.playerId,
+                playerId: playerState?.me?.playerId,
+                roomName: room?.roomName,
+              };
+              return (
+                <button
+                  onClick={() =>
+                    socket.emit(SocketEvents.SelectNomination, nomination)
+                  }
+                >
+                  {p.name}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </Flex>
+      <Flex vertical justify="center">
+        <Flex style={cardContainer} flex={1}>
           {sortedCards.map((card, index) => {
             let isSelected = selectedCardsIndexes.includes(index);
             let style: React.CSSProperties = {
-              ...cardStyle,
-              left: index * 40,
+              marginLeft: index * 40,
               zIndex: index,
+              gridArea: "1/1/2/2",
+              marginTop: isSelected ? "10px" : "20px",
             };
-            if (isSelected) {
-              style.top = "-10px";
-            }
+
             return (
               <div style={style} key={index} onClick={(e) => selectCard(index)}>
                 <FaceUpCard card={card}></FaceUpCard>
               </div>
             );
           })}
-        </div>
+        </Flex>
         <DownFacingCardDeck
           bestCards={playerState?.me?.bestCards?.length || 0}
           blindCards={playerState?.me?.blindCards || 0}
         />
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   );
-};
-
-const flex: React.CSSProperties = {
-  flex: 1,
-  flexGrow: 1,
 };
 
 const container: React.CSSProperties = {
@@ -191,20 +187,9 @@ const container: React.CSSProperties = {
 };
 
 const cardContainer: React.CSSProperties = {
-  padding: "10px",
-  backgroundColor: "#f5f5f5",
-  position: "relative",
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "space-between",
-};
-
-const handContainer: React.CSSProperties = {
-  minHeight: "15em",
-};
-
-const cardStyle: React.CSSProperties = {
-  position: "absolute",
+  display: "grid",
+  gridTemplateColumns: "3fr",
+  gridTemplateRows: "5em 1fr",
 };
 
 export default MyCards;

@@ -1,7 +1,7 @@
-import { GameManager } from "../services/gameManager/gameManager";
+import { GameManager, HistoryEntry } from "../services/gameManager/gameManager";
 import { Card, newCard } from "./card";
 import { OtherPlayer } from "./otherPlayer";
-import { VisiblePlayer } from "./player";
+import { Player, VisiblePlayer } from "./player";
 
 export class GameState {
   discardPile: Card[] = [];
@@ -11,6 +11,8 @@ export class GameState {
   cardSelectingState: boolean = false;
   startingPlayers: string[] = [];
   gameStarted: boolean = false;
+  history: HistoryEntry[] = [];
+  winners: Player[] = [];
 
   /**
    *
@@ -29,6 +31,7 @@ export class GameState {
     this.cardSelectingState = gameManager.choosingBestCards;
     this.startingPlayers = gameManager.startingPlayers;
     this.gameStarted = gameManager.gameStarted;
+    this.winners = gameManager.winners;
   }
 }
 
@@ -81,5 +84,14 @@ export class ClientGameState extends GameState {
     }
 
     return "";
+  }
+
+  getWinPosition(player: VisiblePlayer): number {
+    let winners = this.winners.map((p) => p.playerId);
+    if (!winners.includes(player.playerId)) {
+      return winners.length == this.players.length - 1 ? this.players.length : 0;
+    }
+
+    return winners.indexOf(player.playerId) + 1;
   }
 }

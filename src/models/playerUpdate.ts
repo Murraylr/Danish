@@ -12,12 +12,12 @@ export interface PlayerState {
 }
 
 export interface PlayerReady {
-    roomName: string;
-    playerId: string;
-    ready: boolean;
+  roomName: string;
+  playerId: string;
+  ready: boolean;
 }
 
 export interface GetMeModel {
-    roomName: string;
-    playerId: string;
+  roomName: string;
+  playerId: string;
 }

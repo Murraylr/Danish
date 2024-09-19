@@ -3,9 +3,7 @@ import { Server, Socket } from "socket.io";
 import express, { Request } from "express";
 import { InitialiseConnection } from "./socketFunctions";
 import { SocketEvents } from "./src/models/socketEvents";
-import cors, { CorsOptions } from "cors";
-import cookieParser from "cookie-parser";
-import cookie from "cookie";
+import cors from "cors";
 import session from "express-session";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
@@ -18,7 +16,7 @@ declare module "express-session" {
 
 const app = express();
 const sessionMiddleware = session({
-  secret: "keyboard cat",
+  secret: "fhdfhdfgjjbjakslkfkadgbjewlkgnkjwekrj;oq kpeo20385983409ptymn4 2ei8psu099g05oihyt983409",
   resave: true,
   saveUninitialized: true,
   store: new session.MemoryStore(),
@@ -59,16 +57,8 @@ app.use((req, res, next) => {
   }
 });
 
-console.log("Environment: ", process.env.ENVIRONMENT);
-
-
-
-console.log("Client path: ", clientPath);
-
 app.use(express.static(clientPath));
-
 const server = createServer(app);
-
 const io = new Server(server, {
   cors: {
     origin: "http://localhost:3001",
@@ -101,6 +91,10 @@ io.on("connection", (socket: Socket) => {
   socket.on(SocketEvents.SelectBestCard, connection.selectBestCard);
   socket.on(SocketEvents.SelectNomination, connection.selectNomination);
   socket.on(SocketEvents.PickUp, connection.pickUp);
+
+  if (process.env.ENVIRONMENT === "dev") {
+    socket.on(SocketEvents.SetTest, connection.setTest);
+  }
 });
 
 let port = process.env.PORT || 3000;

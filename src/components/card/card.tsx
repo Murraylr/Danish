@@ -3,6 +3,7 @@ import { Card } from "../../models/card";
 
 interface CardComponentProps {
   card: Card;
+  style?: React.CSSProperties;
 }
 
 const CardComponent: React.FC<CardComponentProps> = ({

@@ -8,6 +8,9 @@ import {
 import { useSelector } from "react-redux";
 import { State } from "../state";
 import { GameState, getClientState } from "../../models/gameState";
+import { GameManager } from "../../services/gameManager/gameManager";
+import { Player } from "../../models/player";
+import { PlayerWonModel } from "../../models/playerWonModel";
 
 type GameStateReducer = {
   setGameState: CaseReducer<GameState | null, PayloadAction<GameState>>;

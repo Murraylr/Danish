@@ -5,7 +5,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { HomePage } from "./pages/homePage/homePage";
 import GameRoom from "./pages/room/gameRoom";
 import { Provider } from "react-redux";
-import store from './redux/reduxStore';
+import store from "./redux/reduxStore";
+import { ConfigProvider } from "antd";
 
 const router = createBrowserRouter([
   {
@@ -25,7 +26,17 @@ function App() {
 
   return (
     <Provider store={store}>
-      <RouterProvider router={router} />
+      <ConfigProvider
+        theme={{
+          components: {
+            Layout: {
+              footerBg: '#eee',
+            },
+          },
+        }}
+      >
+        <RouterProvider router={router} />
+      </ConfigProvider>
     </Provider>
   );
 }

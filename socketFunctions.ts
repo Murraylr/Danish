@@ -9,6 +9,9 @@ import { GetMeModel, PlayerReady } from "./src/models/playerUpdate";
 import { BestCardSelection } from "./src/models/bestCardSelection";
 import { Nomination } from "./src/models/nomination";
 import { PickUpModel } from "./src/models/pickUpModel";
+import { PlayerWonModel } from "./src/models/playerWonModel";
+import { TestParameters } from "./src/models/testParameters";
+import { CannotPlayCard } from "./src/models/cannotPlayCardModel";
 
 const roomManager = new RoomManager();
 
@@ -32,6 +35,19 @@ export function InitialiseConnection(
     }
   }
 
+  function winGame(playerId: string, roomName: string) {
+    let gameRoom = roomManager.getRoom(roomName);
+    let gameManager = gameRoom?.gameManager;
+    let player = gameManager?.players.get(playerId);
+
+    gameRoom?.gameManager.winners.push(player);
+    const playerWonModel: PlayerWonModel = {
+      player,
+      position: gameManager?.winners.length,
+    };
+    socket.to(roomName).emit(SocketEvents.PlayerWon, playerWonModel)
+  }
+
   function startGame(roomName: string) {
     let gameRoom = roomManager.getRoom(roomName);
     gameRoom?.gameManager.startGame();
@@ -50,6 +66,7 @@ export function InitialiseConnection(
 
   return {
     joinRoom: function (roomModel: JoinRoomModel) {
+      console.log("Joining room: ", roomModel);
       let room = roomManager.getRoom(roomModel.roomName);
       if (!room) {
         room = roomManager.createRoom(roomModel.roomName);
@@ -60,6 +77,9 @@ export function InitialiseConnection(
         player = room.gameManager.players.get(playerId)!;
         player.connected = true;
       } else {
+        //let playerTwo = new Player("2", "Player 2");
+        //playerTwo.markReady();
+        //room.addPlayer(playerTwo)
         player = new Player(playerId, roomModel.playerName!);
         room.addPlayer(player);
       }
@@ -68,7 +88,10 @@ export function InitialiseConnection(
       socket.join(roomModel.roomName);
       socket.join(`${roomModel.roomName}/${playerId}`);
       updateClient(roomModel.roomName);
-      io.to(`${room.roomName}/${playerId}`).emit(SocketEvents.RoomJoined, roomModel);
+      io.to(`${room.roomName}/${playerId}`).emit(
+        SocketEvents.RoomJoined,
+        roomModel
+      );
       room.addSystemMessage(`${roomModel.playerName} has joined the room`);
       io.to(room.roomName).emit(SocketEvents.MessageSent, room.messages);
 
@@ -127,8 +150,21 @@ export function InitialiseConnection(
         return;
       }
 
-      gameRoom?.gameManager.playCards(player, turn.cards);
-      
+      gameRoom?.gameManager.playCards(player, turn.cards, (error) => {
+        let cannotPlayCard: CannotPlayCard = {
+          message: error,
+        };
+        socket
+          .to(`${turn.room.roomName}/${playerId}`)
+          .emit(SocketEvents.CannotPlayCard, cannotPlayCard);
+      });
+
+      let winner = gameRoom?.gameManager.hasPlayerWon(player);
+
+      if (winner) {
+        winGame(player.playerId, turn.room.roomName);
+      }
+
       updateClient(turn.room.roomName);
     },
 
@@ -142,7 +178,11 @@ export function InitialiseConnection(
 
       gameRoom?.gameManager.selectBestCards(bestCard.playerId, bestCard.cards);
 
-      if (gameRoom?.gameManager.playerArray().every((player) => player.bestCards.length === 3)) {
+      if (
+        gameRoom?.gameManager
+          .playerArray()
+          .every((player) => player.bestCards.length === 3)
+      ) {
         gameRoom?.gameManager.setStartingPlayers();
       }
 
@@ -170,11 +210,14 @@ export function InitialiseConnection(
       let gameRoom = roomManager.getRoom(nomination.roomName);
       let player = gameRoom?.gameManager.players.get(nomination.playerId);
 
-      if(!player) {
+      if (!player) {
         return;
       }
 
-      gameRoom?.gameManager.handleNomination(player, nomination.nominatedPlayerId);
+      gameRoom?.gameManager.handleNomination(
+        player,
+        nomination.nominatedPlayerId
+      );
       updateClient(nomination.roomName);
     },
 
@@ -188,6 +231,65 @@ export function InitialiseConnection(
 
       gameRoom?.gameManager.pickUpPile(player);
       updateClient(pickUpModel.roomName);
-    }
+    },
+
+    setTest: function (testParams: TestParameters) {
+      let gameRoom = roomManager.getRoom(testParams.roomName);
+      let player = gameRoom?.gameManager.players.get(playerId);
+      let gameManager = gameRoom?.gameManager;
+      if (!player) {
+        return;
+      }
+
+      gameManager.winners = [];
+
+      for (let i = gameManager.players.size; i < testParams.numPlayers; i++) {
+        gameManager.addPlayer(new Player(i.toString(), `Player ${i}`));
+      }
+
+      gameManager.players.forEach((player) => {
+        player.bestCards = [];
+        player.hand = [];
+        player._blindCards = [];
+        player.inGame = true;
+        player.markReady();
+      });
+
+      gameManager.deck = [];
+      gameManager.createDeck();
+      gameManager.shuffleDeck();
+
+      let deck = [...gameManager.deck];
+      gameManager.deck = [];
+
+      for (let i = 0; i < testParams.deckAmount; i++) {
+        gameManager.deck.push(deck.pop()!);
+      }
+
+      for (let i = 0; i < testParams.blindAmount; i++) {
+        for (let player of gameManager.playerArray()) {
+          player.addBlindCard(deck.pop()!);
+        }
+      }
+
+      for (let i = 0; i < testParams.bestAmount; i++) {
+        for (let player of gameManager.playerArray()) {
+          player.bestCards.push(deck.pop()!);
+        }
+      }
+
+      for (let i = 0; i < testParams.handAmount; i++) {
+        for (let player of gameManager.playerArray()) {
+          player.hand.push(deck.pop()!);
+        }
+      }
+
+      gameManager.discardPile = testParams.discardPile || [];
+      gameManager.choosingBestCards = false;
+      gameManager.currentPlayerIndex = 0;
+      gameManager.gameStarted = true;
+
+      updateClient(testParams.roomName);
+    },
   };
 }

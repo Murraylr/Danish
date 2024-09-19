@@ -1,4 +1,7 @@
-import { GameManager } from "../services/gameManager/gameManager";
+import {
+  GameManager,
+  GameManagerTester,
+} from "../services/gameManager/gameManager";
 import { ChatMessage } from "./chatMessage";
 import { Player } from "./player";
 
@@ -20,10 +23,10 @@ export class Room {
 
   addSystemMessage(message: string) {
     this.messages.push({
-        message,
-        sender: 'System',
-        roomName: this.roomName,
-      });
+      message,
+      sender: "System",
+      roomName: this.roomName,
+    });
   }
 
   addMessage(sender: string, message: string) {
