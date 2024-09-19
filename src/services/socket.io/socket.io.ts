@@ -73,6 +73,10 @@ export const startSocketIO = (store: EnhancedStore<any, any, any>) => {
       });
     });
 
+    socket.on(SocketEvents.PlayerWon, (playerWonModel: PlayerWonModel) => {
+      dispatch(gameStateActions.playerWon(playerWonModel));
+    });
+
     return () => {
       socket.off(SocketEvents.MessageSent);
       socket.off(SocketEvents.StartGame);
