@@ -91,6 +91,7 @@ io.on("connection", (socket: Socket) => {
   socket.on(SocketEvents.SelectBestCard, connection.selectBestCard);
   socket.on(SocketEvents.SelectNomination, connection.selectNomination);
   socket.on(SocketEvents.PickUp, connection.pickUp);
+  socket.on(SocketEvents.RestartGame, connection.startGame);
 
   if (process.env.ENVIRONMENT === "dev") {
     socket.on(SocketEvents.SetTest, connection.setTest);

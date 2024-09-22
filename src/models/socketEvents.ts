@@ -26,6 +26,7 @@ export enum SocketEvents {
     PickUp = "pickUp",
 
     PlayerWon = "playerWon",
+    RestartGame = "restartGame",
 
     SetTest = "setTest",
 }

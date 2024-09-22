@@ -24,7 +24,14 @@ import { Player, VisiblePlayer } from "../../models/player";
 import { PlayerState } from "../../models/playerUpdate";
 import { PlayerWonModel } from "../../models/playerWonModel";
 import { omitProperty, proxiedPropertiesOf } from "../typeUtils";
-import { minBy, every, uniq, uniqBy } from "lodash";
+import { minBy, every, uniq, uniqBy, takeRight, some } from "lodash";
+import {
+  canPlayCard,
+  createShuffledDeck,
+  IsFourSameCards,
+  IsNominationCard,
+  SetAceOneStatuses,
+} from "./gameFunctions";
 
 export interface HistoryEntry {
   player?: Player;
@@ -64,19 +71,12 @@ export class GameManager {
       return;
     }
 
-    this.createDeck();
+    this.deck = createShuffledDeck();
 
-    if (this.players.size > 3) {
-      console.log("Creating second deck.");
-      this.createDeck();
-    }
-
-    for (let i = 0; i < 10; i++) {
-      this.shuffleDeck();
-    }
-
-    for (let player of this.playerArray()) {
+    for (let [id, player] of Array.from(this.players)) {
       player.hand = [];
+      player.bestCards = [];
+      player._blindCards = [];
       player.inGame = true;
     }
     this.dealCards();
@@ -109,65 +109,6 @@ export class GameManager {
     return Array.from(this.players.values()).filter(
       (p) => (this.gameStarted && p.inGame) || !this.gameStarted
     );
-  }
-
-  createDeck() {
-    this.deck.push(new Ace(Suit.Hearts));
-    this.deck.push(new Ace(Suit.Clubs));
-    this.deck.push(new Ace(Suit.Diamonds));
-    this.deck.push(new Ace(Suit.Spades));
-    this.deck.push(new Two(Suit.Hearts));
-    this.deck.push(new Two(Suit.Clubs));
-    this.deck.push(new Two(Suit.Diamonds));
-    this.deck.push(new Two(Suit.Spades));
-    this.deck.push(new Three(Suit.Hearts));
-    this.deck.push(new Three(Suit.Clubs));
-    this.deck.push(new Three(Suit.Diamonds));
-    this.deck.push(new Three(Suit.Spades));
-    this.deck.push(new Four(Suit.Hearts));
-    this.deck.push(new Four(Suit.Clubs));
-    this.deck.push(new Four(Suit.Diamonds));
-    this.deck.push(new Four(Suit.Spades));
-    this.deck.push(new Five(Suit.Hearts));
-    this.deck.push(new Five(Suit.Clubs));
-    this.deck.push(new Five(Suit.Diamonds));
-    this.deck.push(new Five(Suit.Spades));
-    this.deck.push(new Six(Suit.Hearts));
-    this.deck.push(new Six(Suit.Clubs));
-    this.deck.push(new Six(Suit.Diamonds));
-    this.deck.push(new Six(Suit.Spades));
-    this.deck.push(new Seven(Suit.Hearts));
-    this.deck.push(new Seven(Suit.Clubs));
-    this.deck.push(new Seven(Suit.Diamonds));
-    this.deck.push(new Seven(Suit.Spades));
-    this.deck.push(new Eight(Suit.Hearts));
-    this.deck.push(new Eight(Suit.Clubs));
-    this.deck.push(new Eight(Suit.Diamonds));
-    this.deck.push(new Eight(Suit.Spades));
-    this.deck.push(new Nine(Suit.Hearts));
-    this.deck.push(new Nine(Suit.Clubs));
-    this.deck.push(new Nine(Suit.Diamonds));
-    this.deck.push(new Nine(Suit.Spades));
-    this.deck.push(new Ten(Suit.Hearts));
-    this.deck.push(new Ten(Suit.Clubs));
-    this.deck.push(new Ten(Suit.Diamonds));
-    this.deck.push(new Ten(Suit.Spades));
-    this.deck.push(new Jack(Suit.Hearts));
-    this.deck.push(new Jack(Suit.Clubs));
-    this.deck.push(new Jack(Suit.Diamonds));
-    this.deck.push(new Jack(Suit.Spades));
-    this.deck.push(new Queen(Suit.Hearts));
-    this.deck.push(new Queen(Suit.Clubs));
-    this.deck.push(new Queen(Suit.Diamonds));
-    this.deck.push(new Queen(Suit.Spades));
-    this.deck.push(new King(Suit.Hearts));
-    this.deck.push(new King(Suit.Clubs));
-    this.deck.push(new King(Suit.Diamonds));
-    this.deck.push(new King(Suit.Spades));
-  }
-
-  shuffleDeck() {
-    this.deck.sort(() => Math.random() - 0.5);
   }
 
   dealCards() {
@@ -277,31 +218,20 @@ export class GameManager {
     return false;
   }
 
-  canPlay(player: Player, cards: Card[]) {
+  canPlay(
+    player: Player,
+    cards: Card[],
+    onFailCallback?: (errorMessage: string) => void
+  ): boolean {
     if (!this.isPlayersTurn(player.playerId)) {
       console.log("Cannot Play: Not players turn.");
+      onFailCallback("It is not your turn.");
       return false;
     }
 
-    if (player.nominating) {
-      console.log("Cannot Play: Player needs to nominate.");
-      return false;
-    }
-
-    if (!cards || cards.length === 0) {
-      console.log("Cannot Play: No cards selected.");
-      return false;
-    }
-
-    if (uniqBy(cards, (card) => card.getNumber())?.length > 1) {
-      console.log("Cannot Play: More than one number selected.");
-      return false;
-    }
-
-    let card = cards[0];
-
-    return card.canPlay(this.discardPile, (message) => {
+    return canPlayCard(player, cards, this.discardPile, (message) => {
       this.addHistory(message, player, cards, false);
+      onFailCallback(message);
     });
   }
 
@@ -312,8 +242,7 @@ export class GameManager {
   ): void {
     let cards = cardsInput.map(newCard);
 
-    if (!this.canPlay(player, cards)) {
-      if (onFailCallback) onFailCallback("Cannot play those cards.");
+    if (!this.canPlay(player, cards, onFailCallback)) {
       return;
     }
 
@@ -333,20 +262,20 @@ export class GameManager {
       cardsToPlay.length === 0 ||
       cardsToPlay.length !== cards.length
     ) {
-      if (onFailCallback)
-        onFailCallback(
-          "No cards selected or cards not in your hand. Try refreshing."
-        );
+      onFailCallback(
+        "No cards selected or cards not in your hand. Try refreshing."
+      );
       return;
     }
 
     this.currentPlayerIndex = this.playerArray().findIndex(
       (p) => p.playerId === player.playerId
     );
-    this.changeAcesToOne(cardsToPlay);
-    let cardEvent = cardsToPlay[0]!.getCardEvent(this.discardPile);
+
+    SetAceOneStatuses(cardsToPlay, this.discardPile);
+    let cardEvent = this.getCardEvent(cardsToPlay);
+
     console.log("Card Event: ", cardEvent);
-    let previousPile = [...this.discardPile];
 
     this.addHistory(
       `plays ${cardsToPlay.length} ${cardsToPlay[0].getName()}s.`,
@@ -354,23 +283,48 @@ export class GameManager {
       cardsToPlay,
       true
     );
-    for (let card of cardsToPlay) {
-      this.discardPile.push(newCard(card!));
-    }
-    while (this.deck.length > 0 && player.hand.length < 3) {
-      this.drawCard(player);
-    }
+
+    this.AddToDiscardPileAndDrawCards(cardsToPlay, player);
 
     let postPlayAction = this.getPostPlayAction(player);
     this.handlePostPlayAction(player, postPlayAction);
 
     player.nominated = false;
 
-    this.currentPlayerIndex = this.getPlayerIndexToPlay(
-      cardsToPlay[0]!,
-      previousPile
-    );
+    this.currentPlayerIndex = this.getPlayerIndexToPlay(cardEvent);
     this.handleCardEvent(player, cardEvent);
+  }
+
+  private AddToDiscardPileAndDrawCards(cardsToPlay: Card[], player: Player) {
+    for (let card of cardsToPlay) {
+      this.discardPile.push(newCard(card!));
+    }
+    while (this.deck.length > 0 && player.hand.length < 3) {
+      this.drawCard(player);
+    }
+  }
+
+  getCardEvent(cardsToPlay: Card[]): CardEvent {
+    if (cardsToPlay.length === 0) {
+      throw new Error("No cards passed to getCardEvent.");
+    }
+    let card = cardsToPlay[0];
+    if (
+      IsFourSameCards(cardsToPlay, this.discardPile) ||
+      card.card === CardNumber.Ten
+    ) {
+      return CardEvent.DiscardPile;
+    }
+
+    if (IsNominationCard(card, this.discardPile)) {
+      return CardEvent.Nominate;
+    }
+
+    if (card.card === CardNumber.Seven) {
+      return CardEvent.Back;
+    }
+
+    return CardEvent.Next;
   }
 
   hasPlayerWon(player: Player): PlayerWonModel | null {
@@ -378,11 +332,17 @@ export class GameManager {
       return null;
     }
 
-    if (player.hand.length === 0 && player.blindCards === 0 && player.bestCards.length === 0) {
+    if (
+      player.hand.length === 0 &&
+      player.blindCards === 0 &&
+      player.bestCards.length === 0
+    ) {
       player.inGame = false;
       this.winners.push(player);
 
-      this.addHistory(`${player.name} has finished! Position: ${this.winners.length}`);
+      this.addHistory(
+        `${player.name} has finished! Position: ${this.winners.length}`
+      );
       if (this.winners.length === this.players.size - 1) {
         let loser = this.playerArray().find((p) => p.inGame);
         this.addHistory(`${loser.name} has lost!`);
@@ -426,23 +386,6 @@ export class GameManager {
     return PostPlayAction.Win;
   }
 
-  private changeAcesToOne(cardsToPlay: Card[]) {
-    if (this.discardPile.length === 0) {
-      return;
-    }
-
-    if (
-      this.getTopDiscard()?.isPowerCard &&
-      cardsToPlay[0].card === CardNumber.Ace
-    ) {
-      for (let card of cardsToPlay) {
-        console.log("Aces are ones.");
-        let ace = card as Ace;
-        ace.isOne = true;
-      }
-    }
-  }
-
   handleNomination(player: Player, nominatedPlayerId: string) {
     let nominatedPlayer = this.players.get(nominatedPlayerId);
 
@@ -461,7 +404,7 @@ export class GameManager {
       case CardEvent.Nominate:
         player.nominating = true;
         break;
-      case CardEvent.Ten:
+      case CardEvent.DiscardPile:
         this.discardPile = [];
         break;
       default:
@@ -537,15 +480,13 @@ export class GameManager {
     return (this.currentPlayerIndex - 1) % this.players.size;
   }
 
-  getPlayerIndexToPlay(cardPlayed: Card, discardPile: Card[]): number {
-    let nextPlayer = cardPlayed.getCardEvent(discardPile);
-
-    switch (nextPlayer) {
+  getPlayerIndexToPlay(cardEvent: CardEvent): number {
+    switch (cardEvent) {
       case CardEvent.Next:
         return this.getNextPlayer();
       case CardEvent.Back:
         return this.getPreviousPlayer();
-      case CardEvent.Ten:
+      case CardEvent.DiscardPile:
         return this.currentPlayerIndex;
       case CardEvent.Nominate:
         return this.currentPlayerIndex;
@@ -593,53 +534,5 @@ export class GameManager {
     successful?: boolean
   ) {
     this.history.push({ message, player, cardsAttempted, successful });
-  }
-}
-
-export class GameManagerTester extends GameManager {
-  startGame(
-    numPlayers: number = 2,
-    deckAmount: number = 10,
-    blindAmount: number = 3,
-    bestAmount: number = 3,
-    handAmount: number = 3,
-    discardPile: Card[] = []
-  ) {
-    for (let i = 0; i < numPlayers; i++) {
-      this.addPlayer(new Player(i.toString(), `Player ${i}`));
-    }
-
-    this.createDeck();
-    this.shuffleDeck();
-
-    let deck = [...this.deck];
-    this.deck = [];
-
-    for (let i = 0; i < deckAmount; i++) {
-      this.deck.push(deck.pop()!);
-    }
-
-    for (let i = 0; i < blindAmount; i++) {
-      for (let player of this.playerArray()) {
-        player.addBlindCard(deck.pop()!);
-      }
-    }
-
-    for (let i = 0; i < bestAmount; i++) {
-      for (let player of this.playerArray()) {
-        player.bestCards.push(deck.pop()!);
-      }
-    }
-
-    for (let i = 0; i < handAmount; i++) {
-      for (let player of this.playerArray()) {
-        player.hand.push(deck.pop()!);
-      }
-    }
-
-    this.discardPile = discardPile;
-    this.choosingBestCards = false;
-    this.currentPlayerIndex = 0;
-    this.gameStarted = true;
   }
 }

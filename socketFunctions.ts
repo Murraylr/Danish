@@ -12,6 +12,7 @@ import { PickUpModel } from "./src/models/pickUpModel";
 import { PlayerWonModel } from "./src/models/playerWonModel";
 import { TestParameters } from "./src/models/testParameters";
 import { CannotPlayCard } from "./src/models/cannotPlayCardModel";
+import { createShuffledDeck } from "./src/services/gameManager/gameFunctions";
 
 const roomManager = new RoomManager();
 
@@ -45,7 +46,7 @@ export function InitialiseConnection(
       player,
       position: gameManager?.winners.length,
     };
-    socket.to(roomName).emit(SocketEvents.PlayerWon, playerWonModel)
+    io.to(roomName).emit(SocketEvents.PlayerWon, playerWonModel)
   }
 
   function startGame(roomName: string) {
@@ -154,13 +155,12 @@ export function InitialiseConnection(
         let cannotPlayCard: CannotPlayCard = {
           message: error,
         };
-        socket
+        io
           .to(`${turn.room.roomName}/${playerId}`)
           .emit(SocketEvents.CannotPlayCard, cannotPlayCard);
       });
 
       let winner = gameRoom?.gameManager.hasPlayerWon(player);
-
       if (winner) {
         winGame(player.playerId, turn.room.roomName);
       }
@@ -255,11 +255,7 @@ export function InitialiseConnection(
         player.markReady();
       });
 
-      gameManager.deck = [];
-      gameManager.createDeck();
-      gameManager.shuffleDeck();
-
-      let deck = [...gameManager.deck];
+      let deck = createShuffledDeck();;
       gameManager.deck = [];
 
       for (let i = 0; i < testParams.deckAmount; i++) {

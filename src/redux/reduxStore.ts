@@ -3,6 +3,7 @@ import gameStateReducer from "./gameState/gameStateSlice";
 import playerStateReducer from "./playerState/playerStateSlice";
 import roomStateReducer from "./roomState/roomStateSlice";
 import messageStateReducer from "./messagesState/messagesStateSlice";
+import winnerStateReducer from "./winnerStateSlice/winnerStateSlice";
 
 export default configureStore({
   reducer: {
@@ -10,5 +11,6 @@ export default configureStore({
     playerState: playerStateReducer,
     room: roomStateReducer,
     messages: messageStateReducer,
+    winners: winnerStateReducer
   },
 });

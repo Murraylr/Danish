@@ -33,6 +33,8 @@ export class GameState {
     this.gameStarted = gameManager.gameStarted;
     this.winners = gameManager.winners;
   }
+
+  getWinPosition
 }
 
 export function getClientState(gameState: GameState): ClientGameState {
@@ -84,14 +86,5 @@ export class ClientGameState extends GameState {
     }
 
     return "";
-  }
-
-  getWinPosition(player: VisiblePlayer): number {
-    let winners = this.winners.map((p) => p.playerId);
-    if (!winners.includes(player.playerId)) {
-      return winners.length == this.players.length - 1 ? this.players.length : 0;
-    }
-
-    return winners.indexOf(player.playerId) + 1;
   }
 }

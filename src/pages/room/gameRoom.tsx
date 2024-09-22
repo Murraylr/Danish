@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import socket from "../../services/socket.io/socket.io";
 import { SocketEvents } from "../../models/socketEvents";
 import ChatBox from "../../components/chatBox/chatBox";
@@ -40,6 +40,8 @@ import { set } from "lodash";
 import Deck from "../../components/deck/deck";
 import { TestParameters } from "../../models/testParameters";
 import DeveloperForm from "../../components/developerForm/developerForm";
+import { selectWinners } from "../../redux/winnerStateSlice/winnerStateSlice";
+import { CannotPlayCard } from "../../models/cannotPlayCardModel";
 
 const { Header, Footer, Sider, Content } = Layout;
 
@@ -161,40 +163,53 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
   const [victoryModalOpen, setIsVictoryModalOpen] = useState(false);
   const [defeatModalOpen, setIsDefeatModalOpen] = useState(false);
   const [api, contextHolder] = notification.useNotification();
-  const invalidPlay = selectInvalidAction();
+  const victors = useRef(0);
+  const winners = selectWinners();
 
   useEffect(() => {
-    if (!invalidPlay) {
+    socket.on(
+      SocketEvents.CannotPlayCard,
+      (cannotPlayCardModel: CannotPlayCard) => {
+        api.error({
+          message: "Cannot play card",
+          description: cannotPlayCardModel.message,
+          placement: "topRight",
+        });
+      }
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!winners || winners.winnerIds.length === 0) {
       return;
     }
 
-    api.error({
-      message: "Cannot play card",
-      description: invalidPlay.message,
-    });
-  }, [invalidPlay]);
-
-  const winPosition = useMemo(() => {
-    if (!playerState || !gameState) {
-      return 0;
+    if (!playerState?.me?.playerId) {
+      return null;
     }
-    return gameState.getWinPosition(playerState.me);
-  }, [gameState?.winners, playerState?.me]);
 
-  const hasShownEndModal = useRef(false);
-
-  useEffect(() => {
-    if (winPosition === 0 || hasShownEndModal.current) {
+    if (victors.current === winners.winnerIds.length) {
       return;
     }
-    
-    hasShownEndModal.current = true;
-    if (gameState.players.length > 0) {
+
+    let victorId = winners.winnerIds[victors.current++];
+    let victor = playerState.otherPlayers.find((p) => p.playerId === victorId);
+    if (victor) {
+      api.success({
+        message: "Victory!",
+        description: `${victor?.name} has won the game!`,
+        placement: "topRight",
+      });
+    }
+
+    if (winners.winnerIds.includes(playerState?.me.playerId)) {
       setIsVictoryModalOpen(true);
-    } else {
+    } else if (playerState?.me.playerId) {
       setIsDefeatModalOpen(true);
     }
-  }, [winPosition]);
+  }, [winners, playerState]);
+
+  const hasShownEndModal = useRef(false);
 
   const onTabChange = useCallback((key: string) => {
     setActiveTabKey(key);
@@ -257,20 +272,30 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
           <Flex justify="space-evenly">
             <MyCards cards={playerState.hand} />
           </Flex>
-
+          {contextHolder}
           <Modal
             title="Victory!"
             open={victoryModalOpen}
-            onOk={() => setIsVictoryModalOpen(false)}
+            onOk={() => {
+              setIsVictoryModalOpen(false);
+              socket.emit(SocketEvents.RestartGame, roomModel.roomName);
+            }}
+            okText="Rematch"
+            cancelText="Bow before me mortals!"
+            onCancel={() => setIsVictoryModalOpen(false)}
           >
-            <p>
-              All hail the mightiest of winners! Your position: {winPosition}
-            </p>
+            <p>All hail the mightiest of winners!</p>
           </Modal>
           <Modal
             title="Defeat!"
             open={defeatModalOpen}
-            onOk={() => setIsDefeatModalOpen(false)}
+            onOk={() => {
+              setIsDefeatModalOpen(false);
+              socket.emit(SocketEvents.RestartGame, roomModel.roomName);
+            }}
+            okText="Rematch"
+            cancelText="Stop! I yield to your superior skills!"
+            onCancel={() => setIsDefeatModalOpen(false)}
           >
             Shame and dishonour on your family! You have lost against the might
             of your opponent.

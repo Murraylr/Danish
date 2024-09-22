@@ -13,6 +13,8 @@ import { roomStateActions } from "../../redux/roomState/roomStateSlice";
 import { JoinRoomModel } from "../../models/joinRoomModel";
 import { PlayerWonModel } from "../../models/playerWonModel";
 import { CannotPlayCard } from "../../models/cannotPlayCardModel";
+import { winnerStateActions } from "../../redux/winnerStateSlice/winnerStateSlice";
+import { OtherPlayer } from "../../models/otherPlayer";
 const isProd = process.env.NODE_ENV === "production";
 
 
@@ -65,16 +67,8 @@ export const startSocketIO = (store: EnhancedStore<any, any, any>) => {
       dispatch(playerStateActions.setPlayerState(playerState));
     });
 
-    socket.on(SocketEvents.CannotPlayCard, (cannotPlayCardModel: CannotPlayCard) => {
-      console.log('Cannot play card: ', cannotPlayCardModel);
-      dispatch(playerStateActions.setInvalidPlay(cannotPlayCardModel));
-      setTimeout(() => {
-        dispatch(playerStateActions.setInvalidPlay(null));
-      });
-    });
-
     socket.on(SocketEvents.PlayerWon, (playerWonModel: PlayerWonModel) => {
-      dispatch(gameStateActions.playerWon(playerWonModel));
+      dispatch(winnerStateActions.addWinner(playerWonModel.player.playerId));
     });
 
     return () => {

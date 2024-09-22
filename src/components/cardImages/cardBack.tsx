@@ -16,8 +16,8 @@ const SvgComponent = ({ style } : Props) => (
   >
     <title>{"Red Card Back"}</title>
     <rect
-      width={186.951}
-      height={266.302}
+        width={233.244}
+        height={332.244}
       x={0.115}
       y={0.303}
       rx={7.149}

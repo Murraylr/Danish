@@ -4,8 +4,8 @@ const SvgComponent = () => (
     <title>{"Eight of Spades Playing Card"}</title>
     <g transform="translate(0 -719.362)">
       <rect
-        width={186.951}
-        height={266.302}
+        width={233.244}
+        height={332.244}
         x={0.378}
         y={719.74}
         rx={8.919}

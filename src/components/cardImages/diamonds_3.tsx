@@ -3,8 +3,8 @@ const SvgComponent = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width={'100%'} height={'100%'} >
     <g transform="translate(0 -719.362)">
       <rect
-        width={186.951}
-        height={266.302}
+        width={233.244}
+        height={332.244}
         x={0.378}
         y={719.74}
         rx={8.919}

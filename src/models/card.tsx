@@ -78,7 +78,7 @@ export enum Suit {
 export enum CardEvent {
   Next,
   Nominate,
-  Ten,
+  DiscardPile,
   Back,
 }
 
@@ -131,7 +131,7 @@ export class Card {
       console.log("Top card is power card, playing ", this.card);
       if (!canPlay && onFailCallback) {
         onFailCallback(
-          `Cannot play a ${this.getName()} on a ${this.getName()}. You must play lower or equal.`
+          `Cannot play a ${this.getName()} on a ${topCard.getName()}. You must play lower or equal.`
         );
       }
       return canPlay;
@@ -141,7 +141,7 @@ export class Card {
     let canPlay = this.getNumber() >= topCard.getNumber();
     if (!canPlay && onFailCallback) {
       onFailCallback(
-        `Cannot play a ${this.getName()} on a ${this.getName()}. You must play higher or equal or a magic card.`
+        `Cannot play a ${this.getName()} on a ${topCard.getName()}. You must play higher or equal or a magic card.`
       );
     }
     return canPlay;
@@ -179,10 +179,6 @@ export class Card {
   render() {
     return <div></div>;
   }
-
-  getCardEvent(onCard: Card[]): CardEvent {
-    return CardEvent.Next;
-  }
 }
 
 export class Ace extends Card {
@@ -219,14 +215,6 @@ export class Ace extends Card {
       case Suit.Spades:
         return <AceOfSpades />;
     }
-  }
-
-  getCardEvent(onCard: Card[]) {
-    if (onCard.length < 1) {
-      return CardEvent.Nominate;
-    }
-
-    return this.isOne ? CardEvent.Next : CardEvent.Nominate;
   }
 }
 
@@ -354,10 +342,6 @@ export class Seven extends Card {
         return <SevenOfSpades />;
     }
   }
-
-  getCardEvent(onCard: Card[]): CardEvent {
-    return CardEvent.Back;
-  }
 }
 
 export class Eight extends Card {
@@ -367,27 +351,17 @@ export class Eight extends Card {
     this.isMagicCard = true;
   }
 
-  canPlay(onCards: Card[]): boolean {
+  canPlay(onCards: Card[], onFailCallback?: (errorMessage: string) => void): boolean {
     let topCard = this.getTopCard(onCards);
     if (topCard === null) {
       return true;
     }
-    return topCard?.card !== CardNumber.Seven;
-  }
-
-  getCardEvent(onCards: Card[]): CardEvent {
-    let topCard = this.getTopCard(onCards);
-    if (topCard === null) {
-      return CardEvent.Next;
+    if (topCard.card === CardNumber.Seven) {
+      onFailCallback('Cannot play an 8 on a 7. Must be lower or equal to a 7.');
+      return false;
     }
 
-    if (topCard.card === CardNumber.Ace && !(topCard as Ace)?.isOne) {
-      console.log("Eight is an ace, playing ", this.card);
-      return CardEvent.Nominate;
-    }
-
-    console.log("Playing ", this.card, " on top card: ", topCard.card);
-    return CardEvent.Next;
+    return true;
   }
 
   render(): JSX.Element {
@@ -432,14 +406,18 @@ export class Ten extends Card {
     this.isMagicCard = true;
   }
 
-  canPlay(onCards: Card[]): boolean {
+  canPlay(onCards: Card[], onFailCallback?: (errorMessage: string) => void): boolean {
     let topCard = this.getTopCard(onCards);
     if (topCard === null) {
       return true;
     }
-    return (
-      topCard?.card !== CardNumber.Seven && topCard?.card !== CardNumber.Nine
-    );
+
+    if (topCard.card === CardNumber.Seven || topCard.card === CardNumber.Ten) {
+      onFailCallback('Cannot play a 10 on a 7 or a 9. Must be lower than or equal.');
+      return false;
+    }
+
+    return true;
   }
 
   render(): JSX.Element {
@@ -453,10 +431,6 @@ export class Ten extends Card {
       case Suit.Spades:
         return <TenOfSpades />;
     }
-  }
-
-  getCardEvent(onCard: Card[]): CardEvent {
-    return CardEvent.Ten;
   }
 }
 

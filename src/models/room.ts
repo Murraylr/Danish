@@ -1,6 +1,5 @@
 import {
-  GameManager,
-  GameManagerTester,
+  GameManager
 } from "../services/gameManager/gameManager";
 import { ChatMessage } from "./chatMessage";
 import { Player } from "./player";
