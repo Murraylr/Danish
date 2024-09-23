@@ -7,9 +7,10 @@ interface CardComponentProps {
 }
 
 const CardComponent: React.FC<CardComponentProps> = ({
+  style,
   card,
 }: CardComponentProps) => {
-  return card.render();
+  return card.render(style);
 };
 
 export default CardComponent;

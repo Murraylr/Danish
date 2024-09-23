@@ -24,11 +24,9 @@ const opts: any = {
   forceNew: true,
 };
 
-const socket = io(opts);
+const env = process.env.REACT_APP_ENVIRONMENT;
 
-// const socket = io('http://localhost:3000', opts && {
-//   forceNew: true,
-// });
+const socket = process.env.REACT_APP_ENVIRONMENT === 'dev'? io('http://localhost:3000', opts) : io(opts);
 
 // export the function to connect and use socket IO:
 export const startSocketIO = (store: EnhancedStore<any, any, any>) => {

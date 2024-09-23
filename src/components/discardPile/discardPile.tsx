@@ -3,53 +3,39 @@ import { Card } from "../../models/card";
 import FaceUpCard from "../card/card";
 
 interface DiscardPileProps {
-  cards: Card[]; // Array of card image URLs
+  cards: Card[];
+  lastCardsPlayed: Card[];
 }
 
-const DiscardPile: React.FC<DiscardPileProps> = ({ cards }) => {
+const DiscardPile: React.FC<DiscardPileProps> = ({
+  cards,
+  lastCardsPlayed,
+}) => {
   return (
-    <div className="discard-pile" style={discardPileStyle}>
-      <div style={pileContainer}>
-        {cards.map((card, index) => {
-          let style: React.CSSProperties = {
-            ...cardStyle,
-            left: index * 1,
-            zIndex: index,
-          };
-          return (
-            <div style={style} key={index}>
-              <FaceUpCard card={card}></FaceUpCard>
-            </div>
-          );
-        })}
-      </div>
+    <div style={deckStyle}>
+      {cards.map((card, index) => {
+        let style: React.CSSProperties = {
+          ...cardStyle,
+          left: index * 1,
+          zIndex: index,
+        };
+        return <FaceUpCard key={index} style={style} card={card}></FaceUpCard>;
+      })}
     </div>
   );
 };
 
-const pileContainer: React.CSSProperties = {
-  minHeight: "15em",
-};
-
-const discardPileStyle: React.CSSProperties = {
-  padding: "10px",
-  marginBottom: "20px",
-  height: "30vh",
-  width: "100%",
-  display: "flex",
-  flexDirection: "row",
-  justifyContent: "center",
-};
-
-const cardContainerStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  gap: "10px",
+const deckStyle: React.CSSProperties = {
+  position: "relative",
+  width: "10em",
+  height: "33vh",
+  margin: "1em",
 };
 
 const cardStyle: React.CSSProperties = {
   position: "absolute",
+  width: "8em",
+  height: "100%",
 };
 
 export default DiscardPile;

@@ -32,6 +32,7 @@ export class GameState {
     this.startingPlayers = gameManager.startingPlayers;
     this.gameStarted = gameManager.gameStarted;
     this.winners = gameManager.winners;
+    this.history = gameManager.history;
   }
 
   getWinPosition

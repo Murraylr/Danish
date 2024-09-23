@@ -1,6 +1,18 @@
-import * as React from "react"
-const SvgComponent = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={'100%'} height={'100%'} >
+import * as React from "react";
+
+interface Props {
+  style?: React.CSSProperties;
+}
+
+const SvgComponent = ({ style }: Props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    xmlSpace="preserve"
+    width={"100%"}
+    height={"100%"}
+    viewBox="0 0 233.182 332.908"
+    style={style}
+  >
     <title>{"Four of Clubs Playing Card"}</title>
     <g transform="translate(0 -719.362)">
       <rect
@@ -187,7 +199,7 @@ const SvgComponent = () => (
           fontSize: "3.77201px",
           lineHeight: "0%",
           fontFamily: "&quot",
-          
+
           letterSpacing: 0,
           wordSpacing: 0,
           fill: "#000",
@@ -198,7 +210,7 @@ const SvgComponent = () => (
       >
         <path
           d="M28.418 706.772q0 .386-.147.754-.331.185-.7.185H15.754q-1.362 0-1.362-1.381 0-.22.037-.773.036-.552.036-.847 0-.644.276-.828.203-.13.902-.13h4.602v-2.834H9.92q-1.602 0-1.602-1.49 0-.259.055-.94.056-.7.056-1.104 0-.626.718-1.565l10.64-13.99q.496-.662 1.25-.662h2.43q.866 0 .866.957v15.02q.662 0 1.51-.036.864-.037 1.104-.037.994 0 1.233.497.24.479.24 2.393 0 .35-.056.534-.11.423-.847.423h-3.184v2.835q.68 0 1.546-.037.865-.037 1.086-.037 1.05 0 1.27.534.184.442.184 2.559zm-8.1-19.696q-1.011 1.546-7.473 10.069h7.4q0-.976-.037-3.35-.055-2.154-.036-3.37.018-1.84.147-3.35z"
-          aria-label={'4'}
+          aria-label={"4"}
           style={{
             fontSize: "37.6985px",
             lineHeight: 1.25,
@@ -216,7 +228,7 @@ const SvgComponent = () => (
           fontSize: "3.77201px",
           lineHeight: "0%",
           fontFamily: "&quot",
-          
+
           letterSpacing: 0,
           wordSpacing: 0,
           fill: "#000",
@@ -227,7 +239,7 @@ const SvgComponent = () => (
       >
         <path
           d="M-221.388-952.85q0 .386-.147.754-.331.184-.7.184h-11.817q-1.362 0-1.362-1.38 0-.221.037-.773.036-.553.036-.847 0-.644.277-.828.202-.13.902-.13h4.601v-2.834h-10.326q-1.602 0-1.602-1.491 0-.258.056-.939.055-.7.055-1.104 0-.626.718-1.565l10.64-13.99q.496-.662 1.25-.662h2.43q.866 0 .866.957v15.02q.662 0 1.51-.036.864-.037 1.104-.037.994 0 1.233.497.24.478.24 2.393 0 .35-.056.534-.11.423-.847.423h-3.184v2.835q.68 0 1.546-.037.865-.037 1.086-.037 1.05 0 1.27.534.184.442.184 2.559zm-8.099-19.696q-1.012 1.546-7.473 10.068h7.4q0-.975-.037-3.35-.056-2.153-.037-3.368.018-1.841.147-3.35z"
-          aria-label={'4'}
+          aria-label={"4"}
           style={{
             fontSize: "37.6985px",
             lineHeight: 1.25,
@@ -238,5 +250,5 @@ const SvgComponent = () => (
       </g>
     </g>
   </svg>
-)
-export default SvgComponent
+);
+export default SvgComponent;

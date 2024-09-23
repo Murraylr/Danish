@@ -72,6 +72,8 @@ export class GameManager {
     }
 
     this.deck = createShuffledDeck();
+    this.discardPile = [];
+    this.winners = [];
 
     for (let [id, player] of Array.from(this.players)) {
       player.hand = [];
@@ -97,12 +99,12 @@ export class GameManager {
       p.hand.some((c) => c.getNumber() === lowestCard?.getNumber())
     );
 
+    this.startingPlayers = playersWithLowestCard.map((p) => p.playerId);
     this.addHistory(
-      `Players with the lowest card: ${this.playerArray()
-        .map((p) => p.name)
+      `Players with the lowest card: ${this.startingPlayers
+        .map((p) => this.players.get(p).name)
         .join(", ")}`
     );
-    this.startingPlayers = playersWithLowestCard.map((p) => p.playerId);
   }
 
   playerArray() {
@@ -224,13 +226,11 @@ export class GameManager {
     onFailCallback?: (errorMessage: string) => void
   ): boolean {
     if (!this.isPlayersTurn(player.playerId)) {
-      console.log("Cannot Play: Not players turn.");
       onFailCallback("It is not your turn.");
       return false;
     }
 
     return canPlayCard(player, cards, this.discardPile, (message) => {
-      this.addHistory(message, player, cards, false);
       onFailCallback(message);
     });
   }
@@ -277,8 +277,11 @@ export class GameManager {
 
     console.log("Card Event: ", cardEvent);
 
+    let multipleCards = cardsToPlay.length > 1;
     this.addHistory(
-      `plays ${cardsToPlay.length} ${cardsToPlay[0].getName()}s.`,
+      `plays ${
+        multipleCards ? cardsToPlay.length : "a"
+      } ${cardsToPlay[0].getName()}${multipleCards ? "s" : ""}.`,
       player,
       cardsToPlay,
       true

@@ -26,6 +26,7 @@ import {
   Layout,
   Modal,
   notification,
+  Space,
 } from "antd";
 import MyCards from "../../components/myCards/myCards";
 import DiscardPile from "../../components/discardPile/discardPile";
@@ -42,6 +43,8 @@ import { TestParameters } from "../../models/testParameters";
 import DeveloperForm from "../../components/developerForm/developerForm";
 import { selectWinners } from "../../redux/winnerStateSlice/winnerStateSlice";
 import { CannotPlayCard } from "../../models/cannotPlayCardModel";
+import HistoryTab from "../../components/historyTab/historyTab";
+import PlayArea from "../../components/playArea/playArea";
 
 const { Header, Footer, Sider, Content } = Layout;
 
@@ -131,16 +134,7 @@ tabList.set("history", {
   key: "history",
   tab: "History",
   render(gameState, playerState, roomModel) {
-    return (
-      <Flex vertical>
-        <h2>Game History</h2>
-        {gameState.history.map((history, index) => (
-          <div key={index}>
-            {history?.player?.name} {history.message}
-          </div>
-        ))}
-      </Flex>
-    );
+    return <HistoryTab history={gameState.history} />;
   },
 });
 
@@ -162,9 +156,11 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
   const [activeTabKey, setActiveTabKey] = useState<string>("players");
   const [victoryModalOpen, setIsVictoryModalOpen] = useState(false);
   const [defeatModalOpen, setIsDefeatModalOpen] = useState(false);
+  const [nameModalOpen, setNameModalOpen] = useState(false);
   const [api, contextHolder] = notification.useNotification();
   const victors = useRef(0);
   const winners = selectWinners();
+  const [nameForm] = Form.useForm();
 
   useEffect(() => {
     socket.on(
@@ -209,26 +205,29 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
     }
   }, [winners, playerState]);
 
-  const hasShownEndModal = useRef(false);
-
   const onTabChange = useCallback((key: string) => {
     setActiveTabKey(key);
   }, []);
 
+  const joinroom = useCallback((model: JoinRoomModel) => {
+    socket.emit(SocketEvents.JoinRoom, model);
+    hasJoinedRoom.current = true;
+    sessionStorage.setItem("playerName", model.playerName);
+  }, []);
+
   useEffect(() => {
-    if (!roomModel || hasJoinedRoom.current) {
+    if (!roomModel?.playerName || hasJoinedRoom.current) {
       return;
     }
-    socket.emit(SocketEvents.JoinRoom, roomModel);
-    hasJoinedRoom.current = true;
+    joinroom(roomModel);
   }, [roomModel, hasJoinedRoom]);
 
-  if (!roomModel?.roomName || !roomModel.playerName) {
+  if (!roomModel?.roomName) {
     navigate("/");
   }
 
-  if (!playerState || !gameState) {
-    return null;
+  if (!roomModel.playerName && !nameModalOpen) {
+    setNameModalOpen(true);
   }
 
   return (
@@ -236,42 +235,44 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
       <Header style={headerStyle}>Room: {roomModel.roomName}</Header>
       <Flex>
         <Flex flex={1} vertical justify="space-between">
-          <Flex
-            style={opponentsContainer}
-            justify="space-evenly"
-            flex={"0 0 10em"}
-          >
-            {playerState.otherPlayers.map((player, index) => (
-              <OpponentDeck
-                opponentName={player.name}
-                blindCards={player.blindCards}
-                bestCards={player.bestCards}
-                hand={player.cardsHeld}
-              />
-            ))}
-          </Flex>
-
-          <Flex>
-            <Flex style={middleContainer}>
-              <DiscardPile cards={gameState.discardPile} />
-              <Deck deckNumber={gameState.pickupDeckNumber} />
-            </Flex>
-            <Flex vertical>
-              <Card
-                style={{ width: "100%" }}
-                tabList={Array.from(tabList.values())}
-                activeTabKey={activeTabKey}
-                onTabChange={onTabChange}
+          {gameState && playerState && (
+            <>
+              <Flex
+                style={opponentsContainer}
+                justify="space-evenly"
+                flex={"0 0 10em"}
               >
-                {tabList
-                  .get(activeTabKey)
-                  ?.render(gameState, playerState, roomModel, messages)}
-              </Card>
-            </Flex>
-          </Flex>
-          <Flex justify="space-evenly">
-            <MyCards cards={playerState.hand} />
-          </Flex>
+                {playerState.otherPlayers.map((player, index) => (
+                  <OpponentDeck
+                    opponentName={player.name}
+                    blindCards={player.blindCards}
+                    bestCards={player.bestCards}
+                    hand={player.cardsHeld}
+                  />
+                ))}
+              </Flex>
+
+              <Flex>
+                <div style={playAreaSection} />
+                <PlayArea style={{ flex: 2 }} />
+                <Flex style={{...playAreaSection, maxWidth: '40vw'}} vertical>
+                  <Card
+                    style={{ width: "100%" }}
+                    tabList={Array.from(tabList.values())}
+                    activeTabKey={activeTabKey}
+                    onTabChange={onTabChange}
+                  >
+                    {tabList
+                      .get(activeTabKey)
+                      ?.render(gameState, playerState, roomModel, messages)}
+                  </Card>
+                </Flex>
+              </Flex>
+              <Flex justify="center" flex={1}>
+                <MyCards cards={playerState.hand} />
+              </Flex>
+            </>
+          )}
           {contextHolder}
           <Modal
             title="Victory!"
@@ -300,6 +301,34 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
             Shame and dishonour on your family! You have lost against the might
             of your opponent.
           </Modal>
+
+          <Modal
+            title="Please enter your name"
+            open={nameModalOpen}
+            onOk={() => {
+              nameForm.validateFields().then(() => {
+                let name = nameForm.getFieldValue("name");
+                joinroom({ ...roomModel, playerName: name });
+                setNameModalOpen(false);
+              });
+            }}
+            onCancel={() => {
+              setNameModalOpen(false);
+              navigate("/");
+            }}
+            okText="Submit"
+          >
+            <Form form={nameForm} layout="vertical">
+              <Form.Item
+                label="Name"
+                name="name"
+                required
+                rules={[{ required: true, message: "Please enter a name." }]}
+              >
+                <Input />
+              </Form.Item>
+            </Form>
+          </Modal>
         </Flex>
       </Flex>
     </Flex>
@@ -315,15 +344,13 @@ const opponentsContainer: React.CSSProperties = {
   maxHeight: "25vh",
 };
 
-const myContainer: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "row",
-  justifyContent: "space-evenly",
-};
-
 const gameRoomContainer: React.CSSProperties = {
   maxHeight: "100vh",
 };
+
+const playAreaSection: React.CSSProperties = {
+  flex: "1"
+}
 
 const headerStyle: React.CSSProperties = {
   textAlign: "center",

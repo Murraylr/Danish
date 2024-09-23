@@ -23,7 +23,7 @@
   "scripts": {
     "start": "npx cross-env ENVIRONMENT='prod' node ./build/server.js",
     "start-server": "cross-env ENVIRONMENT='dev' npx ts-node ./server.ts  --watch",
-    "start-client": "npx cross-env BUILD_PATH='./build/client' react-scripts start --watch",
+    "start-client": "npx cross-env REACT_APP_ENVIRONMENT='dev' PORT=3001 BUILD_PATH='./build/client' react-scripts start --watch",
     "start-dev": "npx cross-env BUILD_PATH='./build/client' react-scripts build --watch && cross-env ENVIRONMENT='dev' npx ts-node ./server.ts  --watch",
     "build": "npx cross-env BUILD_PATH='./build/client' react-scripts build && npx tsc",
     "test": "jest",

@@ -1,23 +1,22 @@
 import * as React from "react";
 
 interface Props {
-    sizeFactor?: number;
-    style?: React.CSSProperties;
+  style?: React.CSSProperties;
 }
 
-const SvgComponent = ({ style } : Props) => (
+const SvgComponent = ({ style }: Props) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     xmlSpace="preserve"
-    width={'100%'}
-    height={'100%'}
+    width={"100%"}
+    height={"100%"}
     viewBox="0 0 187.182 266.908"
     style={style}
   >
     <title>{"Red Card Back"}</title>
     <rect
-        width={233.244}
-        height={332.244}
+      width={187.244}
+      height={266}
       x={0.115}
       y={0.303}
       rx={7.149}
@@ -467,5 +466,5 @@ const SvgComponent = ({ style } : Props) => (
       }}
     />
   </svg>
-)
-export default SvgComponent
+);
+export default SvgComponent;

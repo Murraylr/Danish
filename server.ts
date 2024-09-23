@@ -38,7 +38,6 @@ app.use((req, res, next) => {
   if (/(.ico|.js|.css|.jpg|.png|.map)$/i.test(req.path)) {
     next();
   } else {
-    console.log("Here, session id: ", req.session.playerId);
     res.header("Cache-Control", "private, no-cache, no-store, must-revalidate");
     res.header("Expires", "-1");
     res.header("Pragma", "no-cache");
@@ -49,7 +48,6 @@ app.use((req, res, next) => {
         if (err) {
           console.log("error reloading session: ", err);
         }
-        console.log("setting session id");
         req.session.playerId = uuidv4();
       });
     }
@@ -72,11 +70,19 @@ io.engine.use(sessionMiddleware);
 
 io.on("connection", (socket: Socket) => {
   const request = socket.request as Request;
+  console.log('HERE');
   request.session.save();
+
+  if (process.env.ENVIRONMENT === "dev") {
+    // Setting this for dev environment because sessions don't work well with multiple origins that we use when devving
+    request.session.playerId = uuidv4();
+  }
 
   if (!request.session.playerId) {
     return;
   }
+
+  console.log('HERE 2')
 
   console.log("a user connected with sessionID: ", request.session.playerId);
   let connection = InitialiseConnection(socket, io, request.session.playerId);

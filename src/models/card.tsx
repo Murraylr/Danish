@@ -176,7 +176,7 @@ export class Card {
     return !(topCard as Ace).isOne;
   }
 
-  render() {
+  render(style?: React.CSSProperties): JSX.Element {
     return <div></div>;
   }
 }
@@ -204,16 +204,16 @@ export class Ace extends Card {
     return CardEvent.Nominate;
   }
 
-  render() {
+  render(style?: React.CSSProperties): JSX.Element {
     switch (this.suit) {
       case Suit.Clubs:
-        return <AceOfClubs />;
+        return <AceOfClubs style={style} />;
       case Suit.Diamonds:
-        return <AceOfDiamonds />;
+        return <AceOfDiamonds style={style} />;
       case Suit.Hearts:
-        return <AceOfHearts />;
+        return <AceOfHearts style={style} />;
       case Suit.Spades:
-        return <AceOfSpades />;
+        return <AceOfSpades style={style} />;
     }
   }
 }
@@ -229,16 +229,16 @@ export class Two extends Card {
     return true;
   }
 
-  render(): JSX.Element {
+  render(style?: React.CSSProperties): JSX.Element {
     switch (this.suit) {
       case Suit.Clubs:
-        return <TwoOfClubs />;
+        return <TwoOfClubs style={style} />;
       case Suit.Diamonds:
-        return <TwoOfDiamonds />;
+        return <TwoOfDiamonds style={style} />;
       case Suit.Hearts:
-        return <TwoOfHearts />;
+        return <TwoOfHearts style={style} />;
       case Suit.Spades:
-        return <TwoOfSpades />;
+        return <TwoOfSpades style={style} />;
     }
   }
 }
@@ -249,16 +249,16 @@ export class Three extends Card {
     this.card = CardNumber.Three;
   }
 
-  render(): JSX.Element {
+  render(style?: React.CSSProperties): JSX.Element {
     switch (this.suit) {
       case Suit.Clubs:
-        return <ThreeOfClubs />;
+        return <ThreeOfClubs style={style} />;
       case Suit.Diamonds:
-        return <ThreeOfDiamonds />;
+        return <ThreeOfDiamonds style={style} />;
       case Suit.Hearts:
-        return <ThreeOfHearts />;
+        return <ThreeOfHearts style={style} />;
       case Suit.Spades:
-        return <ThreeOfSpades />;
+        return <ThreeOfSpades style={style} />;
     }
   }
 }
@@ -269,16 +269,16 @@ export class Four extends Card {
     this.card = CardNumber.Four;
   }
 
-  render(): JSX.Element {
+  render(style?: React.CSSProperties): JSX.Element {
     switch (this.suit) {
       case Suit.Clubs:
-        return <FourOfClubs />;
+        return <FourOfClubs style={style} />;
       case Suit.Diamonds:
-        return <FourOfDiamonds />;
+        return <FourOfDiamonds style={style} />;
       case Suit.Hearts:
-        return <FourOfHearts />;
+        return <FourOfHearts style={style} />;
       case Suit.Spades:
-        return <FourOfSpades />;
+        return <FourOfSpades style={style} />;
     }
   }
 }
@@ -289,16 +289,16 @@ export class Five extends Card {
     this.card = CardNumber.Five;
   }
 
-  render(): JSX.Element {
+  render(style?: React.CSSProperties): JSX.Element {
     switch (this.suit) {
       case Suit.Clubs:
-        return <FiveOfClubs />;
+        return <FiveOfClubs style={style} />;
       case Suit.Diamonds:
-        return <FiveOfDiamonds />;
+        return <FiveOfDiamonds style={style} />;
       case Suit.Hearts:
-        return <FiveOfHearts />;
+        return <FiveOfHearts style={style} />;
       case Suit.Spades:
-        return <FiveOfSpades />;
+        return <FiveOfSpades style={style} />;
     }
   }
 }
@@ -309,16 +309,16 @@ export class Six extends Card {
     this.card = CardNumber.Six;
   }
 
-  render(): JSX.Element {
+  render(style?: React.CSSProperties): JSX.Element {
     switch (this.suit) {
       case Suit.Clubs:
-        return <SixOfClubs />;
+        return <SixOfClubs style={style} />;
       case Suit.Diamonds:
-        return <SixOfDiamonds />;
+        return <SixOfDiamonds style={style} />;
       case Suit.Hearts:
-        return <SixOfHearts />;
+        return <SixOfHearts style={style} />;
       case Suit.Spades:
-        return <SixOfSpades />;
+        return <SixOfSpades style={style} />;
     }
   }
 }
@@ -330,16 +330,16 @@ export class Seven extends Card {
     this.isPowerCard = true;
   }
 
-  render(): JSX.Element {
+  render(style?: React.CSSProperties): JSX.Element {
     switch (this.suit) {
       case Suit.Clubs:
-        return <SevenOfClubs />;
+        return <SevenOfClubs style={style} />;
       case Suit.Diamonds:
-        return <SevenOfDiamonds />;
+        return <SevenOfDiamonds style={style} />;
       case Suit.Hearts:
-        return <SevenOfHearts />;
+        return <SevenOfHearts style={style} />;
       case Suit.Spades:
-        return <SevenOfSpades />;
+        return <SevenOfSpades style={style} />;
     }
   }
 }
@@ -364,16 +364,16 @@ export class Eight extends Card {
     return true;
   }
 
-  render(): JSX.Element {
+  render(style?: React.CSSProperties): JSX.Element {
     switch (this.suit) {
       case Suit.Clubs:
-        return <EightOfClubs />;
+        return <EightOfClubs style={style} />;
       case Suit.Diamonds:
-        return <EightOfDiamonds />;
+        return <EightOfDiamonds style={style} />;
       case Suit.Hearts:
-        return <EightOfHearts />;
+        return <EightOfHearts style={style} />;
       case Suit.Spades:
-        return <EightOfSpades />;
+        return <EightOfSpades style={style} />;
     }
   }
 }
@@ -385,16 +385,16 @@ export class Nine extends Card {
     this.isPowerCard = true;
   }
 
-  render(): JSX.Element {
+  render(style?: React.CSSProperties): JSX.Element {
     switch (this.suit) {
       case Suit.Clubs:
-        return <NineOfClubs />;
+        return <NineOfClubs style={style} />;
       case Suit.Diamonds:
-        return <NineOfDiamonds />;
+        return <NineOfDiamonds style={style} />;
       case Suit.Hearts:
-        return <NineOfHearts />;
+        return <NineOfHearts style={style} />;
       case Suit.Spades:
-        return <NineOfSpades />;
+        return <NineOfSpades style={style} />;
     }
   }
 }
@@ -420,16 +420,16 @@ export class Ten extends Card {
     return true;
   }
 
-  render(): JSX.Element {
+  render(style?: React.CSSProperties): JSX.Element {
     switch (this.suit) {
       case Suit.Clubs:
-        return <TenOfClubs />;
+        return <TenOfClubs style={style} />;
       case Suit.Diamonds:
-        return <TenOfDiamonds />;
+        return <TenOfDiamonds style={style} />;
       case Suit.Hearts:
-        return <TenOfHearts />;
+        return <TenOfHearts style={style} />;
       case Suit.Spades:
-        return <TenOfSpades />;
+        return <TenOfSpades style={style} />;
     }
   }
 }
@@ -444,16 +444,16 @@ export class Jack extends Card {
     return 11;
   }
 
-  render(): JSX.Element {
+  render(style?: React.CSSProperties): JSX.Element {
     switch (this.suit) {
       case Suit.Clubs:
-        return <JackOfClubs />;
+        return <JackOfClubs style={style} />;
       case Suit.Diamonds:
-        return <JackOfDiamonds />;
+        return <JackOfDiamonds style={style} />;
       case Suit.Hearts:
-        return <JackOfHearts />;
+        return <JackOfHearts style={style} />;
       case Suit.Spades:
-        return <JackOfSpades />;
+        return <JackOfSpades style={style} />;
     }
   }
 }
@@ -468,16 +468,16 @@ export class Queen extends Card {
     return 12;
   }
 
-  render(): JSX.Element {
+  render(style?: React.CSSProperties): JSX.Element {
     switch (this.suit) {
       case Suit.Clubs:
-        return <QueenOfClubs />;
+        return <QueenOfClubs style={style} />;
       case Suit.Diamonds:
-        return <QueenOfDiamonds />;
+        return <QueenOfDiamonds style={style} />;
       case Suit.Hearts:
-        return <QueenOfHearts />;
+        return <QueenOfHearts style={style} />;
       case Suit.Spades:
-        return <QueenOfSpades />;
+        return <QueenOfSpades style={style} />;
     }
   }
 }
@@ -492,16 +492,16 @@ export class King extends Card {
     return 13;
   }
 
-  render(): JSX.Element {
+  render(style?: React.CSSProperties): JSX.Element {
     switch (this.suit) {
       case Suit.Clubs:
-        return <KingOfClubs />;
+        return <KingOfClubs style={style} />;
       case Suit.Diamonds:
-        return <KingOfDiamonds />;
+        return <KingOfDiamonds style={style} />;
       case Suit.Hearts:
-        return <KingOfHearts />;
+        return <KingOfHearts style={style} />;
       case Suit.Spades:
-        return <KingOfSpades />;
+        return <KingOfSpades style={style} />;
     }
   }
 }

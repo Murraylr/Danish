@@ -155,14 +155,14 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
         )}
       </Flex>
       <Flex vertical justify="center">
-        <Flex style={cardContainer} flex={1}>
+        <Flex style={deckStyle}>
           {sortedCards.map((card, index) => {
             let isSelected = selectedCardsIndexes.includes(index);
             let style: React.CSSProperties = {
-              marginLeft: index * 40,
+              ...cardStyle,
+              left: (index * 1.5) - ((sortedCards.length - 4) * 0.5) + 'em',
               zIndex: index,
-              gridArea: "1/1/2/2",
-              marginTop: isSelected ? "10px" : "20px",
+              top: isSelected ? "10px" : "20px",
             };
 
             return (
@@ -181,15 +181,15 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
   );
 };
 
-const container: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
+const deckStyle: React.CSSProperties = {
+  position: "relative",
+  width: "10em",
+  height: "11.5em",
 };
 
-const cardContainer: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "3fr",
-  gridTemplateRows: "5em 1fr",
+const cardStyle: React.CSSProperties = {
+  position: "absolute",
+  width: "7em",
 };
 
 export default MyCards;

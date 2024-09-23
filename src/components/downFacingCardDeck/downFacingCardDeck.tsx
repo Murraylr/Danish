@@ -11,48 +11,39 @@ const DownFacingCardDeck: React.FC<Props> = ({ bestCards, blindCards }) => {
   // Implement your component logic here
 
   return (
-    <Flex justify="space-around" gap={5}>
+    <Flex justify="space-around" gap={5} style={deckStyle}>
       {Array.from({ length: blindCards }).map((_, index) => {
-        var bestCard = bestCards >= index + 1;
+        let style: React.CSSProperties = {
+          ...cardStyle,
+          left: index * 4 + "em",
+          zIndex: index,
+        };
 
-        return (
-          <div key={index} style={blindCardPile}>
-            <CardBack
-              style={{
-                gridArea: `1/1/2/2`,
-              }}
-            />
-            {bestCard && (
-              <CardBack
-                style={{
-                  gridArea: `1/1/2/2`,
-                  marginLeft: "0.6em",
-                }}
-              />
-            )}
-          </div>
-        );
+        return <CardBack style={style} />;
+      })}
+
+      {Array.from({ length: bestCards }).map((_, index) => {
+        let style: React.CSSProperties = {
+          ...cardStyle,
+          left: (index * 4) + 0.5 + "em",
+          zIndex: index,
+        };
+
+        return <CardBack style={style} />;
       })}
     </Flex>
   );
 };
 
-const blindCardPile: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "3em 3fr",
-  gridTemplateRows: "5em 1fr",
+const deckStyle: React.CSSProperties = {
+  position: "relative",
+  width: "11.5em",
+  height: "5em",
 };
 
-const bestCardsStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "row",
-  justifyContent: "space-around",
+const cardStyle: React.CSSProperties = {
   position: "absolute",
-  zIndex: 1,
-};
-
-const bestCard: React.CSSProperties = {
-  marginLeft: "10px",
+  width: "3em",
 };
 
 export default DownFacingCardDeck;

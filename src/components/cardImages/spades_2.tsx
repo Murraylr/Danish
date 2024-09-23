@@ -1,6 +1,18 @@
 import * as React from "react"
-const SvgComponent = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={'100%'} height={'100%'} >
+
+interface Props {
+  style?: React.CSSProperties;
+}
+
+const SvgComponent = ({ style }: Props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    xmlSpace="preserve"
+    width={"100%"}
+    height={"100%"}
+    viewBox="0 0 233.182 332.908"
+    style={style}
+  >
     <title>{"Two of Spades Playing Card"}</title>
     <g transform="translate(0 -719.362)">
       <rect
