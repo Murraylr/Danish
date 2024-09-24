@@ -280,7 +280,7 @@ export function InitialiseConnection(
         }
       }
 
-      gameManager.discardPile = testParams.discardPile || [];
+      gameManager.bottomDiscardPile = testParams.discardPile || [];
       gameManager.choosingBestCards = false;
       gameManager.currentPlayerIndex = 0;
       gameManager.gameStarted = true;

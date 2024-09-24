@@ -49,7 +49,7 @@ enum PostPlayAction {
 
 export class GameManager {
   deck: Card[];
-  discardPile: Card[];
+
   players: Map<string, Player>;
   currentPlayerIndex: number;
   gameStarted: boolean = false;
@@ -59,10 +59,14 @@ export class GameManager {
   winners: Player[] = [];
   history: HistoryEntry[] = [];
   lastCardsPlayed: Card[] = [];
+  bottomDiscardPile: Card[] = [];
+  public get discardPile(): Card[] {
+    return this.bottomDiscardPile.concat(this.lastCardsPlayed);
+  }
 
   constructor() {
     this.deck = [];
-    this.discardPile = [];
+
     this.players = new Map();
     this.currentPlayerIndex = -1;
   }
@@ -73,7 +77,7 @@ export class GameManager {
     }
 
     this.deck = createShuffledDeck();
-    this.discardPile = [];
+    this.clearDiscardPile(); 
     this.winners = [];
 
     for (let [id, player] of Array.from(this.players)) {
@@ -86,6 +90,11 @@ export class GameManager {
     this.gameStarted = true;
     this.choosingBestCards = true;
     this.addHistory("Game Started. Good luck!");
+  }
+
+  clearDiscardPile(){
+    this.lastCardsPlayed = [];
+    this.bottomDiscardPile = [];
   }
 
   setStartingPlayers() {
@@ -300,7 +309,7 @@ export class GameManager {
   }
 
   private AddToDiscardPileAndDrawCards(cardsToPlay: Card[], player: Player) {
-    this.discardPile = this.discardPile.concat(...this.lastCardsPlayed.map(c => newCard(c)));
+    this.bottomDiscardPile = this.bottomDiscardPile.concat(...this.lastCardsPlayed.map(c => newCard(c)));
     this.lastCardsPlayed = [];
 
     for (let card of cardsToPlay) {
@@ -412,7 +421,7 @@ export class GameManager {
         player.nominating = true;
         break;
       case CardEvent.DiscardPile:
-        this.discardPile = [];
+        this.clearDiscardPile();
         break;
       default:
         break;
@@ -502,7 +511,7 @@ export class GameManager {
 
   pickUpPile(player: Player) {
     player.hand = player.hand.concat(this.discardPile);
-    this.discardPile = [];
+    this.clearDiscardPile();
     this.currentPlayerIndex = this.getNextPlayer();
   }
 

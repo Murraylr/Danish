@@ -24,7 +24,7 @@ const DiscardPile: React.FC<DiscardPileProps> = ({
       {lastCardsPlayed.map((card, index) => {
         let style: React.CSSProperties = {
           ...cardStyle,
-          left: (index * 5) + 20,
+          left: (index * 5) + 20 + cards.length,
           zIndex: cards.length + index,
         };
         return <FaceUpCard key={index} style={style} card={card}></FaceUpCard>;

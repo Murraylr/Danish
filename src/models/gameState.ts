@@ -5,7 +5,7 @@ import { OtherPlayer } from "./otherPlayer";
 import { Player, VisiblePlayer } from "./player";
 
 export class GameState {
-  discardPile: Card[] = [];
+
   pickupDeckNumber: number = 0;
   players: OtherPlayer[] = [];
   currentPlayer: OtherPlayer[] = [];
@@ -14,7 +14,9 @@ export class GameState {
   gameStarted: boolean = false;
   history: HistoryEntry[] = [];
   winners: Player[] = [];
+  discardPile: Card[] = [];
   lastCardsPlayed: Card[] = [];
+  bottomDiscardPile: Card[] = [];
 
   /**
    *
@@ -25,6 +27,8 @@ export class GameState {
     }
 
     this.discardPile = gameManager.discardPile;
+    this.bottomDiscardPile = gameManager.bottomDiscardPile;
+    this.lastCardsPlayed = gameManager.lastCardsPlayed;
     this.pickupDeckNumber = gameManager.deck.length;
     this.players = gameManager
       .playerArray()
@@ -35,7 +39,6 @@ export class GameState {
     this.gameStarted = gameManager.gameStarted;
     this.winners = gameManager.winners;
     this.history = gameManager.history;
-    this.lastCardsPlayed = gameManager.lastCardsPlayed;
   }
 
   getWinPosition
@@ -43,7 +46,7 @@ export class GameState {
 
 export function getClientState(gameState: GameState): ClientGameState {
   return Object.assign(new ClientGameState(), gameState, {
-    discardPile: gameState.discardPile.map((c) => newCard(c)),
+    bottomDiscardPile: gameState.bottomDiscardPile.map((c) => newCard(c)),
     lastCardsPlayed: gameState.lastCardsPlayed.map((c) => newCard(c)),
   });
 }

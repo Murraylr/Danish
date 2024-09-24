@@ -153,7 +153,7 @@ describe.skip("GameManager", () => {
     describe("Ace", () => {
       it("should return true if player has an Ace", () => {
         let canPlay = (onCard?: Card) => {
-          gameManager.discardPile = onCard ? [onCard] : [];
+          gameManager.bottomDiscardPile = onCard ? [onCard] : [];
           return gameManager.canPlay(gameManager.players.get("2")!, [
             new Ace(Suit.Clubs),
           ]);
@@ -177,7 +177,7 @@ describe.skip("GameManager", () => {
 
       it("should allow any card to be played on an Ace as a one", () => {
         let canPlay = (card: Card) => {
-          gameManager.discardPile =
+          gameManager.bottomDiscardPile =
             Math.random() > 0.5
               ? [new Seven(Suit.Clubs), new Ace(Suit.Clubs, true)]
               : [new Nine(Suit.Clubs), new Ace(Suit.Clubs, true)];
@@ -205,7 +205,7 @@ describe.skip("GameManager", () => {
         };
 
         gameManager.players.get("2")!.hand = [new Ace(Suit.Diamonds), new Ace(Suit.Clubs)];
-        gameManager.discardPile = [new Seven(Suit.Clubs)];
+        gameManager.bottomDiscardPile = [new Seven(Suit.Clubs)];
         gameManager.playCards(gameManager.players.get("2")!, [new Ace(Suit.Diamonds), new Ace(Suit.Clubs)]);
 
         expect(canPlay(new Ace(Suit.Diamonds))).toBe(true);
@@ -227,7 +227,7 @@ describe.skip("GameManager", () => {
         let canPlay = (card: Card) => {
           return gameManager.canPlay(gameManager.players.get("2")!, [card]);
         };
-        gameManager.discardPile = [new Ace(Suit.Clubs)];
+        gameManager.bottomDiscardPile = [new Ace(Suit.Clubs)];
         gameManager.players.get("2")!.nominated = true;
 
         expect(canPlay(new Ace(Suit.Diamonds))).toBe(true);
@@ -249,7 +249,7 @@ describe.skip("GameManager", () => {
     describe("Two", () => {
       it("should return true", () => {
         let canPlay = (onCard?: Card) => {
-          gameManager.discardPile = onCard ? [onCard] : [];
+          gameManager.bottomDiscardPile = onCard ? [onCard] : [];
           return gameManager.canPlay(gameManager.players.get("2")!, [
             new Two(Suit.Clubs),
           ]);
@@ -275,7 +275,7 @@ describe.skip("GameManager", () => {
     describe("Three", () => {
       it("should only be playable on cards 2-3, and power cards", () => {
         let canPlay = (onCard?: Card) => {
-          gameManager.discardPile = onCard ? [onCard] : [];
+          gameManager.bottomDiscardPile = onCard ? [onCard] : [];
           return gameManager.canPlay(gameManager.players.get("2")!, [
             new Three(Suit.Clubs),
           ]);
@@ -301,7 +301,7 @@ describe.skip("GameManager", () => {
     describe("Four", () => {
       it("should only be playable on cards 2-4 and power cards", () => {
         let canPlay = (onCard?: Card) => {
-          gameManager.discardPile = onCard ? [onCard] : [];
+          gameManager.bottomDiscardPile = onCard ? [onCard] : [];
           return gameManager.canPlay(gameManager.players.get("2")!, [
             new Four(Suit.Clubs),
           ]);
@@ -327,7 +327,7 @@ describe.skip("GameManager", () => {
     describe("Five", () => {
       it("should only be playable on cards 2-5 and power cards", () => {
         let canPlay = (onCard?: Card) => {
-          gameManager.discardPile = onCard ? [onCard] : [];
+          gameManager.bottomDiscardPile = onCard ? [onCard] : [];
           return gameManager.canPlay(gameManager.players.get("2")!, [
             new Five(Suit.Clubs),
           ]);
@@ -353,7 +353,7 @@ describe.skip("GameManager", () => {
     describe("Six", () => {
       it("should only be playable on cards 2-6 and power cards", () => {
         let canPlay = (onCard?: Card) => {
-          gameManager.discardPile = onCard ? [onCard] : [];
+          gameManager.bottomDiscardPile = onCard ? [onCard] : [];
           return gameManager.canPlay(gameManager.players.get("2")!, [
             new Six(Suit.Clubs),
           ]);
@@ -379,7 +379,7 @@ describe.skip("GameManager", () => {
     describe("Seven", () => {
       it("should only be playable on cards 2-7 and power cards", () => {
         let canPlay = (onCard?: Card) => {
-          gameManager.discardPile = onCard ? [onCard] : [];
+          gameManager.bottomDiscardPile = onCard ? [onCard] : [];
           return gameManager.canPlay(gameManager.players.get("2")!, [
             new Seven(Suit.Clubs),
           ]);
@@ -405,7 +405,7 @@ describe.skip("GameManager", () => {
     describe("Eight", () => {
       it("should only be playable on any card except 7", () => {
         let canPlay = (onCard?: Card) => {
-          gameManager.discardPile = onCard ? [onCard] : [];
+          gameManager.bottomDiscardPile = onCard ? [onCard] : [];
           return gameManager.canPlay(gameManager.players.get("2")!, [
             new Eight(Suit.Clubs),
           ]);
@@ -431,7 +431,7 @@ describe.skip("GameManager", () => {
     describe("Nine", () => {
       it("should only be playable on cards 2-9", () => {
         let canPlay = (onCard?: Card) => {
-          gameManager.discardPile = onCard ? [onCard] : [];
+          gameManager.bottomDiscardPile = onCard ? [onCard] : [];
           return gameManager.canPlay(gameManager.players.get("2")!, [
             new Nine(Suit.Clubs),
           ]);
@@ -457,7 +457,7 @@ describe.skip("GameManager", () => {
     describe("Ten", () => {
       it("should only be playable on any cards except power cards", () => {
         let canPlay = (onCard?: Card) => {
-          gameManager.discardPile = onCard ? [onCard] : [];
+          gameManager.bottomDiscardPile = onCard ? [onCard] : [];
           return gameManager.canPlay(gameManager.players.get("2")!, [
             new Ten(Suit.Clubs),
           ]);
@@ -483,7 +483,7 @@ describe.skip("GameManager", () => {
     describe("Jack", () => {
       it("should only be playable on cards 2-Jack except power cards", () => {
         let canPlay = (onCard?: Card) => {
-          gameManager.discardPile = onCard ? [onCard] : [];
+          gameManager.bottomDiscardPile = onCard ? [onCard] : [];
           return gameManager.canPlay(gameManager.players.get("2")!, [
             new Jack(Suit.Clubs),
           ]);
@@ -509,7 +509,7 @@ describe.skip("GameManager", () => {
     describe("Queen", () => {
       it("should only be playable on cards 2-Queen except power cards", () => {
         let canPlay = (onCard?: Card) => {
-          gameManager.discardPile = onCard ? [onCard] : [];
+          gameManager.bottomDiscardPile = onCard ? [onCard] : [];
           return gameManager.canPlay(gameManager.players.get("2")!, [
             new Queen(Suit.Clubs),
           ]);
@@ -535,7 +535,7 @@ describe.skip("GameManager", () => {
     describe("King", () => {
       it("should only be playable on cards 2-King except power cards", () => {
         let canPlay = (onCard?: Card) => {
-          gameManager.discardPile = onCard ? [onCard] : [];
+          gameManager.bottomDiscardPile = onCard ? [onCard] : [];
           return gameManager.canPlay(gameManager.players.get("2")!, [
             new King(Suit.Clubs),
           ]);
@@ -607,7 +607,7 @@ describe.skip("GameManager", () => {
 
     it('Ace on two fives on a nine', () => {
         gameManager.players.get("2")!.hand = [new Ace(Suit.Clubs)];
-        gameManager.discardPile = [new Nine(Suit.Hearts), new Five(Suit.Clubs), new Five(Suit.Diamonds)];
+        gameManager.bottomDiscardPile = [new Nine(Suit.Hearts), new Five(Suit.Clubs), new Five(Suit.Diamonds)];
 
         gameManager.playCards(gameManager.players.get("2")!, [new Ace(Suit.Clubs)]);
 
@@ -648,25 +648,25 @@ describe.skip("GameManager", () => {
 
   describe('getTopDiscard', () => {
     it('should return the top card of the discard pile', () => {
-        gameManager.discardPile = [new Jack(Suit.Hearts), new Ace(Suit.Clubs)];
+        gameManager.bottomDiscardPile = [new Jack(Suit.Hearts), new Ace(Suit.Clubs)];
 
         expect(gameManager.getTopDiscard()).toEqual(new Ace(Suit.Clubs));
     });
 
     it('should return last non-8 card if top is eight', () => {
-        gameManager.discardPile = [new Ace(Suit.Clubs), new Two(Suit.Clubs), new Eight(Suit.Hearts)];
+        gameManager.bottomDiscardPile = [new Ace(Suit.Clubs), new Two(Suit.Clubs), new Eight(Suit.Hearts)];
 
         expect(gameManager.getTopDiscard()).toEqual(new Two(Suit.Clubs));
     });
 
     it('should return eight if only card in discard pile', () => {
-        gameManager.discardPile = [new Eight(Suit.Hearts)];
+        gameManager.bottomDiscardPile = [new Eight(Suit.Hearts)];
 
         expect(gameManager.getTopDiscard()).toEqual(new Eight(Suit.Hearts));
     });
 
     it('should return null if discard pile is empty', () => {
-        gameManager.discardPile = [];
+        gameManager.bottomDiscardPile = [];
 
         expect(gameManager.getTopDiscard()).toBeNull();
     });
@@ -674,13 +674,13 @@ describe.skip("GameManager", () => {
 
   describe('getPlayerIndexToPlay', () => {
     it('should return next index on a next event', () => {
-        gameManager.discardPile = [new Three(Suit.Clubs)];
+        gameManager.bottomDiscardPile = [new Three(Suit.Clubs)];
 
         expect(gameManager.getPlayerIndexToPlay(CardEvent.Next)).toBe(2);
     });
 
     it('should return next index on a 9', () => {
-        gameManager.discardPile = [new Three(Suit.Clubs)];
+        gameManager.bottomDiscardPile = [new Three(Suit.Clubs)];
 
         expect(gameManager.getPlayerIndexToPlay(CardEvent.Next)).toBe(2);
     });
@@ -697,19 +697,19 @@ describe.skip("GameManager", () => {
     });
 
     it('should return same index on Nominate', () => {
-        gameManager.discardPile = [new Ace(Suit.Clubs), new Eight(Suit.Clubs), new Ace(Suit.Diamonds), new Eight(Suit.Diamonds)];
+        gameManager.bottomDiscardPile = [new Ace(Suit.Clubs), new Eight(Suit.Clubs), new Ace(Suit.Diamonds), new Eight(Suit.Diamonds)];
 
         expect(gameManager.getPlayerIndexToPlay(CardEvent.Nominate)).toBe(1);
     });
 
     it('should return same index when discarding pile', () => {
-        gameManager.discardPile = [new Three(Suit.Clubs)];
+        gameManager.bottomDiscardPile = [new Three(Suit.Clubs)];
 
         expect(gameManager.getPlayerIndexToPlay(CardEvent.DiscardPile)).toBe(1);
     });
 
     it('should start from beginning player when round finished', () => {
-        gameManager.discardPile = [new Three(Suit.Clubs)];
+        gameManager.bottomDiscardPile = [new Three(Suit.Clubs)];
         gameManager.currentPlayerIndex = 2;
 
         expect(gameManager.getPlayerIndexToPlay(CardEvent.Next)).toBe(0);

@@ -14,7 +14,7 @@ const PlayArea: React.FC<Props> = ({ style }) => {
 
   return (
     <Flex style={{...container, ...style}} justify="space-evenly">
-      <DiscardPile cards={gameState.discardPile} lastCardsPlayed={gameState.lastCardsPlayed} />
+      <DiscardPile cards={gameState.bottomDiscardPile} lastCardsPlayed={gameState.lastCardsPlayed} />
       <Deck deckNumber={gameState.pickupDeckNumber} />
     </Flex>
   );
