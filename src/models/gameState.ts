@@ -1,3 +1,4 @@
+import { last } from "lodash";
 import { GameManager, HistoryEntry } from "../services/gameManager/gameManager";
 import { Card, newCard } from "./card";
 import { OtherPlayer } from "./otherPlayer";
@@ -13,6 +14,7 @@ export class GameState {
   gameStarted: boolean = false;
   history: HistoryEntry[] = [];
   winners: Player[] = [];
+  lastCardsPlayed: Card[] = [];
 
   /**
    *
@@ -33,6 +35,7 @@ export class GameState {
     this.gameStarted = gameManager.gameStarted;
     this.winners = gameManager.winners;
     this.history = gameManager.history;
+    this.lastCardsPlayed = gameManager.lastCardsPlayed;
   }
 
   getWinPosition
@@ -41,6 +44,7 @@ export class GameState {
 export function getClientState(gameState: GameState): ClientGameState {
   return Object.assign(new ClientGameState(), gameState, {
     discardPile: gameState.discardPile.map((c) => newCard(c)),
+    lastCardsPlayed: gameState.lastCardsPlayed.map((c) => newCard(c)),
   });
 }
 

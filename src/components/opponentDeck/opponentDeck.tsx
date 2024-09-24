@@ -1,6 +1,5 @@
 import React from "react";
 import CardBack from "../cardImages/cardBack";
-import OtherPlayerCards from "../otherPlayerCards/otherPlayerCards";
 import DownFacingCardDeck from "../downFacingCardDeck/downFacingCardDeck";
 import { Flex } from "antd";
 
@@ -21,10 +20,16 @@ const OpponentDeck: React.FC<OpponentDeckProps> = ({
     <div style={container}>
       <h3 style={headerStyle}>{opponentName}</h3>
       <DownFacingCardDeck bestCards={bestCards} blindCards={blindCards} />
-      <Flex flex={0}>
-        {Array.from({ length: hand }).map((_, index) => (
-          <CardBack />
-        ))}
+      <Flex style={deckStyle}>
+        {Array.from({ length: hand }).map((_, index) => {
+          let style: React.CSSProperties = {
+            ...cardStyle,
+            left: index * 0.5 - (hand - 7) * 0.2 + "em",
+            zIndex: index,
+          };
+
+          return <CardBack style={style} />;
+        })}
       </Flex>
     </div>
   );
@@ -42,14 +47,15 @@ const container: React.CSSProperties = {
   flexBasis: "min-content",
 };
 
-const handStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "5em 1fr",
-  gridTemplateRows: "8em 1fr",
+const deckStyle: React.CSSProperties = {
+  position: "relative",
+  width: "10em",
+  height: "11.5em",
 };
 
-const handCard: React.CSSProperties = {
-  gridArea: "1/1/2/2",
+const cardStyle: React.CSSProperties = {
+  position: "absolute",
+  width: "7em",
 };
 
 export default OpponentDeck;

@@ -160,7 +160,7 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
             let isSelected = selectedCardsIndexes.includes(index);
             let style: React.CSSProperties = {
               ...cardStyle,
-              left: (index * 1.5) - ((sortedCards.length - 4) * 0.5) + 'em',
+              left: (index * 1.5) - ((sortedCards.length - 4) * 0.7) + 'em',
               zIndex: index,
               top: isSelected ? "10px" : "20px",
             };

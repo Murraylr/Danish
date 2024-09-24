@@ -58,6 +58,7 @@ export class GameManager {
   firstMove = true;
   winners: Player[] = [];
   history: HistoryEntry[] = [];
+  lastCardsPlayed: Card[] = [];
 
   constructor() {
     this.deck = [];
@@ -299,8 +300,11 @@ export class GameManager {
   }
 
   private AddToDiscardPileAndDrawCards(cardsToPlay: Card[], player: Player) {
+    this.discardPile = this.discardPile.concat(...this.lastCardsPlayed.map(c => newCard(c)));
+    this.lastCardsPlayed = [];
+
     for (let card of cardsToPlay) {
-      this.discardPile.push(newCard(card!));
+      this.lastCardsPlayed.push(newCard(card!));
     }
     while (this.deck.length > 0 && player.hand.length < 3) {
       this.drawCard(player);
