@@ -107,13 +107,7 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
     sortedCards,
   ]);
 
-  const pickUp = useCallback(() => {
-    let pickupModel: PickUpModel = {
-      playerId: playerState.me.playerId,
-      roomName: room.roomName,
-    };
-    socket.emit(SocketEvents.PickUp, pickupModel);
-  }, [playerState?.me?.playerId, room?.roomName]);
+
 
   if (!playerState || !playerState.me) {
     return null;
@@ -122,17 +116,9 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
   return (
     <Flex vertical>
       <div>{gameState.getStatusMessage(playerState.me)}</div>
-      {!playerState.isNominating && (
-        <Button type="primary" onClick={onClick}>
-          Confirm Selection
-        </Button>
-      )}
+
       <Flex>
-        {gameState.discardPile.length > 0 && (
-          <Button onClick={pickUp} danger>
-            Pickup
-          </Button>
-        )}
+
         {playerState.isNominating && (
           <div>
             {gameState.players.map((p) => {
