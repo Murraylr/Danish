@@ -63,50 +63,7 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
     [gameState?.cardSelectingState, selectedCardsIndexes, sortedCards]
   );
 
-  const playTurn = useCallback(
-    (cards: Card[]) => {
-      let turn: Turn = {
-        cards,
-        playerId: playerState.me.playerId,
-        room: room,
-      };
-      socket.emit(SocketEvents.PlayCard, turn);
-    },
-    [playerState?.me?.playerId, room]
-  );
-
-  const selectBestCards = useCallback(
-    (cards: Card[]) => {
-      let cardSelect: BestCardSelection = {
-        cards,
-        playerId: playerState.me.playerId,
-        roomName: room.roomName,
-      };
-      socket.emit(SocketEvents.SelectBestCard, cardSelect);
-    },
-    [playerState?.me?.playerId, room?.roomName]
-  );
-
-  const onClick = useCallback(() => {
-    let selectedCards: Card[] = sortedCards.filter((card, index) =>
-      selectedCardsIndexes.includes(index)
-    );
-
-    setSelectedCards([]);
-
-    if (gameState.cardSelectingState) {
-      selectBestCards(selectedCards);
-    } else {
-      playTurn(selectedCards);
-    }
-  }, [
-    gameState?.cardSelectingState,
-    playTurn,
-    selectBestCards,
-    selectedCardsIndexes,
-    sortedCards,
-  ]);
-
+ 
 
 
   if (!playerState || !playerState.me) {
@@ -116,30 +73,6 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
   return (
     <Flex vertical>
       <div>{gameState.getStatusMessage(playerState.me)}</div>
-
-      <Flex>
-
-        {playerState.isNominating && (
-          <div>
-            {gameState.players.map((p) => {
-              let nomination: Nomination = {
-                nominatedPlayerId: p?.playerId,
-                playerId: playerState?.me?.playerId,
-                roomName: room?.roomName,
-              };
-              return (
-                <button
-                  onClick={() =>
-                    socket.emit(SocketEvents.SelectNomination, nomination)
-                  }
-                >
-                  {p.name}
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </Flex>
       <Flex vertical justify="center">
         <Flex style={deckStyle}>
           {sortedCards.map((card, index) => {

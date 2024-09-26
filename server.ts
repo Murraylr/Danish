@@ -34,6 +34,10 @@ var clientPath =
     ? path.join(__dirname, "client")
     : path.join(__dirname, "build", "client");
 
+app.get('/ads.txt', (req, res) => {
+  res.sendFile(path.join(clientPath, "ads.txt"));
+});
+
 app.use((req, res, next) => {
   if (/(.ico|.js|.css|.jpg|.png|.map)$/i.test(req.path)) {
     next();
