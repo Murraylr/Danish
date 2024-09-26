@@ -22,14 +22,13 @@ const Deck: React.FC<DeckProps> = ({ deckNumber }) => {
 const deckStyle: React.CSSProperties = {
   position: "relative",
   width: "10em",
-  height: "33vh",
+  height: "25vh",
   margin: '1em',
 };
 
 const cardStyle: React.CSSProperties = {
   position: "absolute",
-  width: "8em",
-  height: "100%",
+  height: "25vh",
 };
 
 export default Deck;

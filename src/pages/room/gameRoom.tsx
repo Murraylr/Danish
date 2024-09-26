@@ -62,40 +62,6 @@ interface CardTab {
 }
 
 const tabList: Map<string, CardTab> = new Map();
-tabList.set("players", {
-  key: "players",
-  tab: "Players",
-  render: (
-    gameState: GameState,
-    playerState: PlayerState,
-    roomModel: JoinRoomModel
-  ) => {
-    return (
-      <>
-        <h2>Players In Room</h2>
-        {gameState.players.map((player) => {
-          return (
-            <div key={player.name}>
-              {player.name}: {player.status}
-            </div>
-          );
-        })}
-        {playerState.me.ready}
-        <Button
-          onClick={() =>
-            socket.emit(SocketEvents.MarkReady, {
-              roomName: roomModel!.roomName,
-              playerId: playerState!.me.playerId,
-              ready: playerState.me.ready ? false : true,
-            })
-          }
-        >
-          {playerState.me.ready ? "Cancel" : "Ready"}
-        </Button>
-      </>
-    );
-  },
-});
 
 tabList.set("chat", {
   key: "chat",
@@ -243,19 +209,14 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
                 flex={"0 0 10em"}
               >
                 {playerState.otherPlayers.map((player, index) => (
-                  <OpponentDeck
-                    opponentName={player.name}
-                    blindCards={player.blindCards}
-                    bestCards={player.bestCards}
-                    hand={player.cardsHeld}
-                  />
+                  <OpponentDeck player={player} />
                 ))}
               </Flex>
 
               <Flex>
                 <div style={playAreaSection} />
                 <PlayArea style={{ flex: 2 }} />
-                <Flex style={{...playAreaSection, maxWidth: '40vw'}} vertical>
+                <Flex style={{ ...playAreaSection, maxWidth: "40vw" }} vertical>
                   <Card
                     style={{ width: "100%" }}
                     tabList={Array.from(tabList.values())}
@@ -269,6 +230,19 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
                 </Flex>
               </Flex>
               <Flex justify="center" flex={1}>
+                {!gameState.gameStarted && (
+                  <Button
+                    onClick={() =>
+                      socket.emit(SocketEvents.MarkReady, {
+                        roomName: roomModel!.roomName,
+                        playerId: playerState!.me.playerId,
+                        ready: playerState.me.ready ? false : true,
+                      })
+                    }
+                  >
+                    {playerState.me.ready ? "Cancel" : "Ready"}
+                  </Button>
+                )}
                 <MyCards cards={playerState.hand} />
               </Flex>
             </>
@@ -349,8 +323,8 @@ const gameRoomContainer: React.CSSProperties = {
 };
 
 const playAreaSection: React.CSSProperties = {
-  flex: "1"
-}
+  flex: "1",
+};
 
 const headerStyle: React.CSSProperties = {
   textAlign: "center",

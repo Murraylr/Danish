@@ -58,6 +58,7 @@ export class GameManager {
   firstMove = true;
   winners: Player[] = [];
   history: HistoryEntry[] = [];
+  lastPlayerId: string | null = null;
   lastCardsPlayed: Card[] = [];
   bottomDiscardPile: Card[] = [];
   public get discardPile(): Card[] {
@@ -77,7 +78,7 @@ export class GameManager {
     }
 
     this.deck = createShuffledDeck();
-    this.clearDiscardPile(); 
+    this.clearDiscardPile();
     this.winners = [];
 
     for (let [id, player] of Array.from(this.players)) {
@@ -85,6 +86,8 @@ export class GameManager {
       player.bestCards = [];
       player._blindCards = [];
       player.inGame = true;
+      player.nominated = false;
+      player.nominating = false;
     }
     this.dealCards();
     this.gameStarted = true;
@@ -92,7 +95,7 @@ export class GameManager {
     this.addHistory("Game Started. Good luck!");
   }
 
-  clearDiscardPile(){
+  clearDiscardPile() {
     this.lastCardsPlayed = [];
     this.bottomDiscardPile = [];
   }
@@ -235,6 +238,10 @@ export class GameManager {
     cards: Card[],
     onFailCallback?: (errorMessage: string) => void
   ): boolean {
+    if (this.IsSameCardAddedToPreviousPlay(player, cards)) {
+      return true;
+    }
+
     if (!this.isPlayersTurn(player.playerId)) {
       onFailCallback("It is not your turn.");
       return false;
@@ -243,6 +250,18 @@ export class GameManager {
     return canPlayCard(player, cards, this.discardPile, (message) => {
       onFailCallback(message);
     });
+  }
+
+  private IsSameCardAddedToPreviousPlay(player: Player, cards: Card[]) {
+    return (
+      this.lastPlayerId === player.playerId &&
+      every(
+        cards,
+        (c) =>
+          newCard(c).getNumber() ===
+          this.discardPile[this.discardPile.length - 1].getNumber()
+      )
+    );
   }
 
   playCards(
@@ -309,8 +328,11 @@ export class GameManager {
   }
 
   private AddToDiscardPileAndDrawCards(cardsToPlay: Card[], player: Player) {
-    this.bottomDiscardPile = this.bottomDiscardPile.concat(...this.lastCardsPlayed.map(c => newCard(c)));
+    this.bottomDiscardPile = this.bottomDiscardPile.concat(
+      ...this.lastCardsPlayed.map((c) => newCard(c))
+    );
     this.lastCardsPlayed = [];
+    this.lastPlayerId = player.playerId;
 
     for (let card of cardsToPlay) {
       this.lastCardsPlayed.push(newCard(card!));

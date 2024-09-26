@@ -128,7 +128,7 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
         </Button>
       )}
       <Flex>
-        {gameState.bottomDiscardPile.length > 0 && (
+        {gameState.discardPile.length > 0 && (
           <Button onClick={pickUp} danger>
             Pickup
           </Button>

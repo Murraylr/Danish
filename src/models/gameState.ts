@@ -56,6 +56,10 @@ export class ClientGameState extends GameState {
     return this.currentPlayer.some((p) => p.playerId === player.playerId);
   }
 
+  isPlayerTurn(player: OtherPlayer): boolean {
+    return this.currentPlayer.some((p) => p.playerId === player.playerId);
+  }
+
   getStatusMessage(player: VisiblePlayer): string {
     if (!this.gameStarted) {
         return "Waiting for players to click ready";

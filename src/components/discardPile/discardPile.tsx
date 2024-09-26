@@ -42,8 +42,7 @@ const deckStyle: React.CSSProperties = {
 
 const cardStyle: React.CSSProperties = {
   position: "absolute",
-  width: "8em",
-  height: "100%",
+  height: "25vh",
 };
 
 export default DiscardPile;

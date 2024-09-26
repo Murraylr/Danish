@@ -2,29 +2,34 @@ import React from "react";
 import CardBack from "../cardImages/cardBack";
 import DownFacingCardDeck from "../downFacingCardDeck/downFacingCardDeck";
 import { Flex } from "antd";
+import { OtherPlayer } from "../../models/otherPlayer";
+import { selectGameState } from "../../redux/gameState/gameStateSlice";
 
 interface OpponentDeckProps {
-  opponentName: string;
-  blindCards: number;
-  bestCards: number;
-  hand: number;
+  player: OtherPlayer
 }
 
 const OpponentDeck: React.FC<OpponentDeckProps> = ({
-  opponentName,
-  blindCards,
-  bestCards,
-  hand,
+  player
 }) => {
+  const gameState = selectGameState();
+
+  let status: string;
+  if (gameState.gameStarted) {
+    status = gameState.isPlayerTurn(player) ? "Playing" : "";
+  } else {
+    status = player.isReady ? "Ready" : "Not Ready";
+  }
+
   return (
     <div style={container}>
-      <h3 style={headerStyle}>{opponentName}</h3>
-      <DownFacingCardDeck bestCards={bestCards} blindCards={blindCards} />
+      <h3 style={headerStyle}>{player.name} ({status})</h3>
+      <DownFacingCardDeck bestCards={player.bestCards} blindCards={player.blindCards} />
       <Flex style={deckStyle}>
-        {Array.from({ length: hand }).map((_, index) => {
+        {Array.from({ length: player.cardsHeld }).map((_, index) => {
           let style: React.CSSProperties = {
             ...cardStyle,
-            left: index * 0.5 - (hand - 7) * 0.2 + "em",
+            left: index * 0.5 - (player.cardsHeld - 7) * 0.2 + "em",
             zIndex: index,
           };
 
