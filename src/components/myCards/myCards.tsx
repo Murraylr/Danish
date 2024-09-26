@@ -13,6 +13,7 @@ import { every, uniqBy } from "lodash";
 import { Nomination } from "../../models/nomination";
 import { PickUpModel } from "../../models/pickUpModel";
 import { Button, Flex } from "antd";
+import Controls from "../controls/controls";
 
 interface MyCardsProps {
   cards: Card[];
@@ -27,29 +28,23 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
   const room = selectRoom();
   const playerState = selectPlayerState();
 
-  const [selectedCardsIndexes, setSelectedCards] = useState<number[]>([]);
+  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
 
   const selectCard = useCallback(
-    (index: number) => {
-      let selectedCards = selectedCardsIndexes.slice();
-
-      if (selectedCards.includes(index)) {
-        selectedCards = selectedCards.filter((i) => i !== index);
-        console.log("Selected cards: ", selectedCards);
-        setSelectedCards(selectedCards);
+    (card: Card) => {
+      if (selectedCards.includes(card)) {
+        setSelectedCards(cards => cards.filter((i) => i !== card));
         return;
       }
 
-      if (gameState.cardSelectingState && selectedCardsIndexes.length >= 3) {
+      if (gameState.cardSelectingState && selectedCards.length >= 3) {
         return;
       }
-
-      selectedCards.push(index);
 
       if (
         !gameState.cardSelectingState &&
         uniqBy(
-          selectedCards.map((i) => sortedCards[i]),
+          selectedCards,
           (c) => c.getNumber()
         ).length > 1
       ) {
@@ -57,14 +52,10 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
         return;
       }
 
-      console.log("Selected cards: ", selectedCards);
-      setSelectedCards(selectedCards);
+      setSelectedCards(cards => [...cards, card]);
     },
-    [gameState?.cardSelectingState, selectedCardsIndexes, sortedCards]
+    [gameState?.cardSelectingState, sortedCards]
   );
-
- 
-
 
   if (!playerState || !playerState.me) {
     return null;
@@ -74,9 +65,10 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
     <Flex vertical>
       <div>{gameState.getStatusMessage(playerState.me)}</div>
       <Flex vertical justify="center">
+        <Controls bestCards={playerState.me.bestCards} selectedCards={selectedCards} onConfirm={() => setSelectedCards([])} />
         <Flex style={deckStyle}>
           {sortedCards.map((card, index) => {
-            let isSelected = selectedCardsIndexes.includes(index);
+            let isSelected = selectedCards.includes(card);
             let style: React.CSSProperties = {
               ...cardStyle,
               left: (index * 1.5) - ((sortedCards.length - 4) * 0.7) + 'em',
@@ -85,7 +77,7 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
             };
 
             return (
-              <div style={style} key={index} onClick={(e) => selectCard(index)}>
+              <div style={style} key={index} onClick={(e) => selectCard(card)}>
                 <FaceUpCard card={card}></FaceUpCard>
               </div>
             );

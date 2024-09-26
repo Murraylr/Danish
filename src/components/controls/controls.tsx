@@ -13,45 +13,44 @@ import { Nomination } from "../../models/nomination";
 
 interface ControlProps {
   selectedCards: Card[];
+  bestCards: Card[];
   onConfirm: () => void;
 }
 
-const Controls: React.FC<ControlProps> = ({ selectedCards, onConfirm }) => {
+const Controls: React.FC<ControlProps> = ({
+  selectedCards,
+  bestCards,
+  onConfirm,
+}) => {
   const gameState = selectGameState();
   const playerState = selectPlayerState();
   const room = selectRoom();
 
-  const playTurn = useCallback(
-    (cards: Card[]) => {
-      let turn: Turn = {
-        cards,
-        playerId: playerState.me.playerId,
-        room: room,
-      };
-      socket.emit(SocketEvents.PlayCard, turn);
-    },
-    [playerState?.me?.playerId, room]
-  );
+  const playTurn = useCallback(() => {
+    let turn: Turn = {
+      cards: selectedCards,
+      playerId: playerState.me.playerId,
+      room: room,
+    };
+    socket.emit(SocketEvents.PlayCard, turn);
+    onConfirm();
+  }, [playerState?.me?.playerId, room, selectedCards]);
 
-  const selectBestCards = useCallback(
-    (cards: Card[]) => {
-      let cardSelect: BestCardSelection = {
-        cards,
-        playerId: playerState.me.playerId,
-        roomName: room.roomName,
-      };
-      socket.emit(SocketEvents.SelectBestCard, cardSelect);
-    },
-    [playerState?.me?.playerId, room?.roomName]
-  );
-
-  const confirmSelection = useCallback(() => {
-    if (gameState.cardSelectingState) {
-      selectBestCards(selectedCards);
-    } else {
-      playTurn(selectedCards);
+  const selectBestCards = useCallback(() => {
+    if (selectedCards.length !== 3) {
+      return;
     }
-  }, [gameState?.cardSelectingState, playTurn, selectBestCards, selectedCards]);
+
+    let cardSelect: BestCardSelection = {
+      cards: selectedCards,
+      playerId: playerState.me.playerId,
+      roomName: room.roomName,
+    };
+
+    socket.emit(SocketEvents.SelectBestCard, cardSelect);
+
+    onConfirm();
+  }, [playerState?.me?.playerId, room?.roomName, selectedCards]);
 
   const pickUp = useCallback(() => {
     let pickupModel: PickUpModel = {
@@ -59,22 +58,32 @@ const Controls: React.FC<ControlProps> = ({ selectedCards, onConfirm }) => {
       roomName: room.roomName,
     };
     socket.emit(SocketEvents.PickUp, pickupModel);
+    onConfirm();
   }, [playerState?.me?.playerId, room?.roomName]);
 
   return (
     <Flex vertical justify="space-between">
       <Flex justify="space-between">
-        {!playerState.isNominating && (
-          <Button type="primary" onClick={confirmSelection}>
-            Confirm Selection
+        {gameState.cardSelectingState && (
+          <Button type="primary" onClick={selectBestCards} disabled={selectedCards.length + bestCards.length !== 3}>
+            Select Cards
           </Button>
         )}
-        {gameState.discardPile.length > 0 &&
-          gameState.isMyTurn(playerState.me) && (
-            <Button style={buttonStyle} onClick={pickUp} danger>
-              Pickup
-            </Button>
-          )}
+
+        {gameState.isMyTurn(playerState.me) && (
+          <>
+            {!playerState.isNominating && (
+              <Button type="primary" onClick={playTurn}>
+                Play cards
+              </Button>
+            )}
+            {gameState.discardPile.length > 0 && (
+              <Button style={buttonStyle} onClick={pickUp} danger>
+                Pickup
+              </Button>
+            )}
+          </>
+        )}
       </Flex>
       <Flex>
         {playerState.isNominating && (

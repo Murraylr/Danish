@@ -253,6 +253,10 @@ export class GameManager {
   }
 
   private IsSameCardAddedToPreviousPlay(player: Player, cards: Card[]) {
+    if (this.discardPile.length === 0) {
+      return false;
+    }
+
     return (
       this.lastPlayerId === player.playerId &&
       every(
