@@ -41,10 +41,11 @@ import { set } from "lodash";
 import Deck from "../../components/deck/deck";
 import { TestParameters } from "../../models/testParameters";
 import DeveloperForm from "../../components/developerForm/developerForm";
-import { selectWinners } from "../../redux/winnerStateSlice/winnerStateSlice";
+import { selectWinners, winnerStateActions } from "../../redux/winnerStateSlice/winnerStateSlice";
 import { CannotPlayCard } from "../../models/cannotPlayCardModel";
 import HistoryTab from "../../components/historyTab/historyTab";
 import PlayArea from "../../components/playArea/playArea";
+import { useDispatch } from "react-redux";
 
 const { Header, Footer, Sider, Content } = Layout;
 
@@ -127,6 +128,19 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
   const victors = useRef(0);
   const winners = selectWinners();
   const [nameForm] = Form.useForm();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    socket.on(
+      SocketEvents.StartGame,
+      () => {
+        setIsVictoryModalOpen(false);
+        setIsDefeatModalOpen(false);
+        victors.current = 0;
+        dispatch(winnerStateActions.clearWinners());
+      }
+    );
+  }, []);
 
   useEffect(() => {
     socket.on(

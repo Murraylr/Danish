@@ -20,12 +20,16 @@ export type WinnerState = {
 
 type WinnerStateReducer = {
   addWinner: CaseReducer<WinnerState, PayloadAction<string>>;
+  clearWinners: CaseReducer<WinnerState>;
 } & SliceCaseReducers<WinnerState>;
 
 const caseReducers: WinnerStateReducer = {
   addWinner: (state: WinnerState, action: PayloadAction<string>) => {
     state.winnerIds = uniq([...state.winnerIds, action.payload]);
     return state;
+  },
+  clearWinners: (state: WinnerState) => {
+    state.winnerIds = [];
   },
 };
 
