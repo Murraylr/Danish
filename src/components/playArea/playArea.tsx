@@ -28,6 +28,7 @@ const PlayArea: React.FC<Props> = ({ style }) => {
 
 const container: React.CSSProperties = {
   display: "flex",
+  minHeight: "10em",
 };
 
 export default PlayArea;

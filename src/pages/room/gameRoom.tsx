@@ -127,21 +127,21 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
   const [nameForm] = Form.useForm();
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (!roomModel?.roomName || !playerState?.me?.playerId) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!roomModel?.roomName || !playerState?.me?.playerId) {
+  //     return;
+  //   }
 
-    const interval = setInterval(() => {
-      const getMeModel: GetMeModel = {
-        playerId: playerState?.me?.playerId,
-        roomName: roomModel.roomName,
-      };
-      socket.emit(SocketEvents.GetMe, getMeModel);
-    }, 1000);
+  //   const interval = setInterval(() => {
+  //     const getMeModel: GetMeModel = {
+  //       playerId: playerState?.me?.playerId,
+  //       roomName: roomModel.roomName,
+  //     };
+  //     socket.emit(SocketEvents.GetMe, getMeModel);
+  //   }, 1000);
 
-    return () => clearInterval(interval);
-  }, [roomModel?.roomName, playerState?.me?.playerId]);
+  //   return () => clearInterval(interval);
+  // }, [roomModel?.roomName, playerState?.me?.playerId]);
 
   useEffect(() => {
     socket.on(SocketEvents.RestartGame, () => {
@@ -226,9 +226,9 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
         <MyHeader roomName={roomModel.roomName} />
       </Sider>
       <Content>
-        <Flex vertical>
-          <Flex>
-            <Flex flex={1} vertical justify="space-between">
+        <Flex vertical style={{ height: '100%' }}>
+          <Flex style={{ height: '100%' }}>
+            <Flex flex={1} vertical justify="space-between" style={{ height: '100%' }}>
               {gameState && playerState && (
                 <>
                   <Flex
