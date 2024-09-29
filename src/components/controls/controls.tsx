@@ -6,14 +6,15 @@ import { PickUpModel } from "../../models/pickUpModel";
 import { selectRoom } from "../../redux/roomState/roomStateSlice";
 import socket from "../../services/socket.io/socket.io";
 import { SocketEvents } from "../../models/socketEvents";
-import { Card } from "../../models/card";
+import { Card, CardType } from "../../models/card";
 import { Turn } from "../../models/turn";
 import { BestCardSelection } from "../../models/bestCardSelection";
 import { Nomination } from "../../models/nomination";
+import useGameStateService from "../../hooks/useGameStateService/useGameStateService";
 
 interface ControlProps {
-  selectedCards: Card[];
-  bestCards: Card[];
+  selectedCards: CardType[];
+  bestCards: CardType[];
   onConfirm: () => void;
 }
 
@@ -22,9 +23,10 @@ const Controls: React.FC<ControlProps> = ({
   bestCards,
   onConfirm,
 }) => {
-  const gameState = selectGameState();
   const playerState = selectPlayerState();
   const room = selectRoom();
+  const gameState = selectGameState();
+  const gameStateService = useGameStateService();
 
   const playTurn = useCallback(() => {
     let turn: Turn = {
@@ -65,25 +67,31 @@ const Controls: React.FC<ControlProps> = ({
     <Flex vertical justify="space-between">
       <Flex justify="space-between">
         {gameState.cardSelectingState && (
-          <Button type="primary" onClick={selectBestCards} disabled={selectedCards.length + bestCards.length !== 3}>
+          <Button
+            type="primary"
+            onClick={selectBestCards}
+            disabled={selectedCards.length + bestCards.length !== 3}
+          >
             Select Cards
           </Button>
         )}
 
-        {gameState.isMyTurn(playerState.me) && (
-          <>
-            {!playerState.isNominating && (
-              <Button type="primary" onClick={playTurn}>
-                Play cards
-              </Button>
-            )}
-            {gameState.discardPile.length > 0 && (
-              <Button style={buttonStyle} onClick={pickUp} danger>
-                Pickup
-              </Button>
-            )}
-          </>
-        )}
+        {!gameState.cardSelectingState &&
+          !playerState.isNominating &&
+          gameStateService.isMyTurn(playerState.me) && (
+            <>
+              {!playerState.isNominating && (
+                <Button type="primary" onClick={playTurn}>
+                  Play cards
+                </Button>
+              )}
+              {gameState.discardPile.length > 0 && (
+                <Button style={buttonStyle} onClick={pickUp} danger>
+                  Pickup
+                </Button>
+              )}
+            </>
+          )}
       </Flex>
       <Flex>
         {playerState.isNominating && (
@@ -96,6 +104,7 @@ const Controls: React.FC<ControlProps> = ({
               };
               return (
                 <Button
+                  key={p.playerId}
                   onClick={() =>
                     socket.emit(SocketEvents.SelectNomination, nomination)
                   }

@@ -81,19 +81,19 @@ describe.skip("GameManager", () => {
 
   describe("setStartingPlayers", () => {
     it("should set player with lowest non-magic card as starting player", () => {
-      gameManager.players.get("1")!.hand = [
+      gameManager.players.get("1")!._hand = [
         new Two(Suit.Clubs),
         new Five(Suit.Clubs),
         new Jack(Suit.Clubs),
       ];
 
-      gameManager.players.get("2")!.hand = [
+      gameManager.players.get("2")!._hand = [
         new Three(Suit.Clubs),
         new King(Suit.Clubs),
         new Queen(Suit.Clubs),
       ];
 
-      gameManager.players.get("3")!.hand = [
+      gameManager.players.get("3")!._hand = [
         new Ace(Suit.Clubs),
         new Nine(Suit.Clubs),
         new Ten(Suit.Clubs),
@@ -105,19 +105,19 @@ describe.skip("GameManager", () => {
     });
 
     it("should set multiple players with lowest non-magic card when lowest card equal", () => {
-      gameManager.players.get("1")!.hand = [
+      gameManager.players.get("1")!._hand = [
         new Four(Suit.Clubs),
         new Five(Suit.Clubs),
         new Jack(Suit.Clubs),
       ];
 
-      gameManager.players.get("2")!.hand = [
+      gameManager.players.get("2")!._hand = [
         new Two(Suit.Clubs),
         new King(Suit.Clubs),
         new Queen(Suit.Clubs),
       ];
 
-      gameManager.players.get("3")!.hand = [
+      gameManager.players.get("3")!._hand = [
         new Four(Suit.Clubs),
         new Nine(Suit.Clubs),
         new Ten(Suit.Clubs),
@@ -204,7 +204,7 @@ describe.skip("GameManager", () => {
           return gameManager.canPlay(gameManager.players.get("3")!, [card]);
         };
 
-        gameManager.players.get("2")!.hand = [new Ace(Suit.Diamonds), new Ace(Suit.Clubs)];
+        gameManager.players.get("2")!._hand = [new Ace(Suit.Diamonds), new Ace(Suit.Clubs)];
         gameManager.bottomDiscardPile = [new Seven(Suit.Clubs)];
         gameManager.playCards(gameManager.players.get("2")!, [new Ace(Suit.Diamonds), new Ace(Suit.Clubs)]);
 
@@ -561,7 +561,7 @@ describe.skip("GameManager", () => {
 
   describe('playTurn', () => {
     it('should not allow cards to be played if they are not owned', () => {
-        gameManager.players.get("2")!.hand = [new Two(Suit.Clubs)];
+        gameManager.players.get("2")!._hand = [new Two(Suit.Clubs)];
 
         gameManager.playCards(gameManager.players.get("2")!, [new Ace(Suit.Clubs)]);
 
@@ -572,7 +572,7 @@ describe.skip("GameManager", () => {
 
     it('should add cards to the discard pile and remove them from the player', () => {
         gameManager.deck = [new King(Suit.Hearts), new Ace(Suit.Clubs), new Three(Suit.Clubs), new Four(Suit.Clubs)];
-        gameManager.players.get("2")!.hand = [new Two(Suit.Clubs)];
+        gameManager.players.get("2")!._hand = [new Two(Suit.Clubs)];
 
         gameManager.playCards(gameManager.players.get("2")!, [new Two(Suit.Clubs)]);
 
@@ -582,7 +582,7 @@ describe.skip("GameManager", () => {
     });
 
     it('should pickup cards from deck until 3', () => {
-        gameManager.players.get("2")!.hand = [new Two(Suit.Clubs)];
+        gameManager.players.get("2")!._hand = [new Two(Suit.Clubs)];
         gameManager.deck = [new King(Suit.Hearts), new Ace(Suit.Clubs), new Three(Suit.Clubs), new Four(Suit.Clubs)];
 
         gameManager.playCards(gameManager.players.get("2")!, [new Two(Suit.Clubs)]);
@@ -594,7 +594,7 @@ describe.skip("GameManager", () => {
     });
 
     it('should not pickup cards from deck if player has 3 cards', () => {
-        gameManager.players.get("2")!.hand = [new Two(Suit.Clubs), new Three(Suit.Clubs), new Four(Suit.Clubs), new Five(Suit.Clubs)];
+        gameManager.players.get("2")!._hand = [new Two(Suit.Clubs), new Three(Suit.Clubs), new Four(Suit.Clubs), new Five(Suit.Clubs)];
         gameManager.deck = [new King(Suit.Hearts), new Ace(Suit.Clubs), new Three(Suit.Clubs), new Four(Suit.Clubs)];
 
         gameManager.playCards(gameManager.players.get("2")!, [new Two(Suit.Clubs)]);
@@ -606,20 +606,20 @@ describe.skip("GameManager", () => {
     });
 
     it('Ace on two fives on a nine', () => {
-        gameManager.players.get("2")!.hand = [new Ace(Suit.Clubs)];
+        gameManager.players.get("2")!._hand = [new Ace(Suit.Clubs)];
         gameManager.bottomDiscardPile = [new Nine(Suit.Hearts), new Five(Suit.Clubs), new Five(Suit.Diamonds)];
 
         gameManager.playCards(gameManager.players.get("2")!, [new Ace(Suit.Clubs)]);
 
         let ace = gameManager.discardPile[gameManager.discardPile.length - 1] as Ace;
 
-        expect(ace.isOne).toBe(false);
+        expect(ace).toBeInstanceOf(Ace);
     });
 
     it('Ace then 8 should not allow seven', () => {
-      gameManager.players.get("2")!.hand = [new Ace(Suit.Clubs), new Seven(Suit.Clubs), new Two(Suit.Clubs)];
-        gameManager.players.get("1")!.hand = [new Ace(Suit.Clubs), new Eight(Suit.Clubs)];
-        gameManager.players.get("3")!.hand = [new Ace(Suit.Clubs), new Eight(Suit.Clubs)];
+      gameManager.players.get("2")!._hand = [new Ace(Suit.Clubs), new Seven(Suit.Clubs), new Two(Suit.Clubs)];
+        gameManager.players.get("1")!._hand = [new Ace(Suit.Clubs), new Eight(Suit.Clubs)];
+        gameManager.players.get("3")!._hand = [new Ace(Suit.Clubs), new Eight(Suit.Clubs)];
 
         gameManager.playCards(gameManager.players.get("2")!, [new Ace(Suit.Clubs)]);
         expect(gameManager.players.get("2")!.nominating).toBe(true);

@@ -1,30 +1,42 @@
-import { Card } from "./card";
+import { memoize, MemoizedFunction } from "lodash";
+import { Card, CardType, newCard } from "./card";
 
-export type VisiblePlayer = Omit<Player, "_blindCards"> & { blindCards: number };
+export type VisiblePlayer = Omit<Player, "_blindCards" | "hand" | "getHand"> & {
+  blindCards: number;
+};
 
 export class Player {
   playerId: string;
-  hand: Card[];
+  _hand: readonly CardType[];
   name: string;
   ready: boolean = false;
   connected: boolean = true;
-  _blindCards: Card[] = [];
-  bestCards: Card[] = [];
+  _blindCards: CardType[] = [];
+  bestCards: CardType[] = [];
   nominating = false;
   nominated = false;
   inGame = false;
   finished = false;
+  private getHand: ((hand: readonly CardType[]) => Card[]) & MemoizedFunction;
 
   constructor(playerId: string, name: string) {
     this.playerId = playerId;
-    this.hand = [];
+    this._hand = [];
     this.name = name;
     this.connected = true;
     this._blindCards = [];
+
+    this.getHand = memoize((hand: CardType[]) =>
+      hand.map((card) => newCard(card))
+    );
   }
 
   public get blindCards(): number {
     return this._blindCards.length;
+  }
+
+  public get hand(): readonly Card[] {
+    return this.getHand(this._hand);
   }
 
   public addBlindCard(card: Card) {
@@ -32,23 +44,11 @@ export class Player {
   }
 
   addCardToHand(card: Card) {
-    this.hand.push(card);
+    this._hand = [...this._hand, card];
   }
 
   nominatePlayer(): Player {
     return this;
-  }
-
-  playCard(onCards: Card[]): Card | false {
-    if (!onCards.length) {
-      return this.hand.pop()!;
-    }
-
-    if (!this.hand.some((card) => card.canPlay(onCards))) {
-      return false;
-    }
-
-    return this.hand.pop()!;
   }
 
   markReady() {
@@ -56,12 +56,14 @@ export class Player {
   }
 
   removeCardFromHand(card: Card) {
-    let index = this.hand.findIndex((c) => c.card === card.card && c.suit === card.suit);
+    let index = this.hand.findIndex(
+      (c) => c.card === card.card && c.suit === card.suit
+    );
     if (index === -1) {
       return null;
     }
 
-    this.hand.splice(index, 1);
+    this._hand = [...this._hand.slice(0, index), ...this._hand.slice(index + 1)];
     return card;
   }
 }

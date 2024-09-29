@@ -56,12 +56,10 @@ export const startSocketIO = (store: EnhancedStore<any, any, any>) => {
     });
 
     socket.on(SocketEvents.GameUpdate, (gameState: GameState) => {
-      console.log('Updating game state: ', gameState);
       dispatch(gameStateActions.setGameState(gameState));
     });
 
     socket.on(SocketEvents.PlayerUpdate, (playerState: PlayerState) => {
-      console.log('Updating player state: ', playerState);
       dispatch(playerStateActions.setPlayerState(playerState));
     });
 

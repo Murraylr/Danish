@@ -7,10 +7,7 @@ import {
 } from "@reduxjs/toolkit";
 import { useSelector } from "react-redux";
 import { State } from "../state";
-import { GameState, getClientState } from "../../models/gameState";
-import { GameManager } from "../../services/gameManager/gameManager";
-import { Player } from "../../models/player";
-import { PlayerWonModel } from "../../models/playerWonModel";
+import { GameState } from "../../models/gameState";
 
 type GameStateReducer = {
   setGameState: CaseReducer<GameState | null, PayloadAction<GameState>>;
@@ -18,7 +15,7 @@ type GameStateReducer = {
 
 const caseReducers: GameStateReducer = {
   setGameState: (state: GameState | null, action: PayloadAction<GameState>) => {
-    state = getClientState(action.payload);
+    state = action.payload;
     return state;
   },
 };
@@ -38,11 +35,7 @@ export const gameStateSlice = createSlice<
 export const gameStateActions = gameStateSlice.actions;
 
 export const selectGameState = () => {
-  return useSelector((state: State) => {
-    return state.gameState;
-  });
+  return useSelector((state: State) => state.gameState);
 };
-// }
-//   useSelector((state: State) => state.gameState);
 
 export default gameStateSlice.reducer;

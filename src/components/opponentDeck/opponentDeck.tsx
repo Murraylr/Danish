@@ -4,6 +4,7 @@ import DownFacingCardDeck from "../downFacingCardDeck/downFacingCardDeck";
 import { Flex } from "antd";
 import { OtherPlayer } from "../../models/otherPlayer";
 import { selectGameState } from "../../redux/gameState/gameStateSlice";
+import useGameStateService from "../../hooks/useGameStateService/useGameStateService";
 
 interface OpponentDeckProps {
   player: OtherPlayer
@@ -13,17 +14,18 @@ const OpponentDeck: React.FC<OpponentDeckProps> = ({
   player
 }) => {
   const gameState = selectGameState();
+  const gameFunctions = useGameStateService();
 
   let status: string;
   if (gameState.gameStarted) {
-    status = gameState.isPlayerTurn(player) ? "Playing" : "";
+    status = gameFunctions.isPlayerTurn(player) ? "Playing" : "";
   } else {
     status = player.isReady ? "Ready" : "Not Ready";
   }
 
   return (
     <div style={container}>
-      <h3 style={headerStyle}>{player.name} ({status})</h3>
+      <h3 style={headerStyle}>{player.name} {!!status ? `(${status})` : ''}</h3>
       <DownFacingCardDeck bestCards={player.bestCards} blindCards={player.blindCards} />
       <Flex style={deckStyle}>
         {Array.from({ length: player.cardsHeld }).map((_, index) => {
@@ -33,7 +35,7 @@ const OpponentDeck: React.FC<OpponentDeckProps> = ({
             zIndex: index,
           };
 
-          return <CardBack style={style} />;
+          return <CardBack key={index} style={style} />;
         })}
       </Flex>
     </div>

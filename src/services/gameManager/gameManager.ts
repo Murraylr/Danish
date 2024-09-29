@@ -3,6 +3,7 @@ import {
   Card,
   CardEvent,
   CardNumber,
+  CardType,
   Eight,
   Five,
   Four,
@@ -34,7 +35,7 @@ import {
 } from "./gameFunctions";
 
 export interface HistoryEntry {
-  player?: Player;
+  playerName?: string;
   cardsAttempted?: Card[];
   successful?: boolean;
   message: string;
@@ -56,7 +57,7 @@ export class GameManager {
   choosingBestCards: boolean = false;
   startingPlayers: string[] = [];
   firstMove = true;
-  winners: Player[] = [];
+  winners: OtherPlayer[] = [];
   history: HistoryEntry[] = [];
   lastPlayerId: string | null = null;
   lastCardsPlayed: Card[] = [];
@@ -82,7 +83,7 @@ export class GameManager {
     this.winners = [];
 
     for (let [id, player] of Array.from(this.players)) {
-      player.hand = [];
+      player._hand = [];
       player.bestCards = [];
       player._blindCards = [];
       player.inGame = true;
@@ -109,7 +110,7 @@ export class GameManager {
       .filter((c) => c.getNumber() !== 2 && c.getNumber() !== 1);
     let lowestCard = minBy(allCards, (c) => c.getNumber());
     let playersWithLowestCard = this.playerArray().filter((p) =>
-      p.hand.some((c) => c.getNumber() === lowestCard?.getNumber())
+      p.hand.some((c) => newCard(c).getNumber() === lowestCard?.getNumber())
     );
 
     this.startingPlayers = playersWithLowestCard.map((p) => p.playerId);
@@ -130,7 +131,7 @@ export class GameManager {
     for (let i = 0; i < 6; i++) {
       for (let player of this.playerArray()) {
         let card = this.deck.pop();
-        player.hand.push(card!);
+        player._hand = [...player._hand, card!];
       }
     }
 
@@ -270,7 +271,7 @@ export class GameManager {
 
   playCards(
     player: Player,
-    cardsInput: Card[],
+    cardsInput: CardType[],
     onFailCallback?: (error: string) => void
   ): void {
     let cards = cardsInput.map(newCard);
@@ -305,7 +306,7 @@ export class GameManager {
       (p) => p.playerId === player.playerId
     );
 
-    SetAceOneStatuses(cardsToPlay, this.discardPile);
+    cardsToPlay = SetAceOneStatuses(cardsToPlay, this.discardPile);
     let cardEvent = this.getCardEvent(cardsToPlay);
 
     console.log("Card Event: ", cardEvent);
@@ -315,12 +316,12 @@ export class GameManager {
       `plays ${
         multipleCards ? cardsToPlay.length : "a"
       } ${cardsToPlay[0].getName()}${multipleCards ? "s" : ""}.`,
-      player,
+      player.name,
       cardsToPlay,
       true
     );
 
-    this.AddToDiscardPileAndDrawCards(cardsToPlay, player);
+    this.AddToDiscardPile(cardsToPlay, player);
 
     let postPlayAction = this.getPostPlayAction(player);
     this.handlePostPlayAction(player, postPlayAction);
@@ -331,7 +332,7 @@ export class GameManager {
     this.handleCardEvent(player, cardEvent);
   }
 
-  private AddToDiscardPileAndDrawCards(cardsToPlay: Card[], player: Player) {
+  private AddToDiscardPile(cardsToPlay: Card[], player: Player) {
     this.bottomDiscardPile = this.bottomDiscardPile.concat(
       ...this.lastCardsPlayed.map((c) => newCard(c))
     );
@@ -341,6 +342,9 @@ export class GameManager {
     for (let card of cardsToPlay) {
       this.lastCardsPlayed.push(newCard(card!));
     }
+  }
+
+  private DrawCards(player: Player) {
     while (this.deck.length > 0 && player.hand.length < 3) {
       this.drawCard(player);
     }
@@ -380,7 +384,7 @@ export class GameManager {
       player.bestCards.length === 0
     ) {
       player.inGame = false;
-      this.winners.push(player);
+      this.winners.push(new OtherPlayer(player, "Winner"));
 
       this.addHistory(
         `${player.name} has finished! Position: ${this.winners.length}`
@@ -401,13 +405,13 @@ export class GameManager {
   private handlePostPlayAction(player: Player, postPlayAction: PostPlayAction) {
     switch (postPlayAction) {
       case PostPlayAction.PickUpBestCards:
-        player.hand = player.bestCards.map(newCard);
+        player._hand = [...player.bestCards];
         player.bestCards = [];
-        this.addHistory("has picked up their best cards.", player);
+        this.addHistory("has picked up their best cards.", player.name);
         break;
       case PostPlayAction.PickUpBlindCard:
-        player.hand.push(player._blindCards.pop()!);
-        this.addHistory("has picked up a blind card.", player);
+        player._hand = [player._blindCards.pop()!];
+        this.addHistory("has picked up a blind card.", player.name);
         break;
     }
   }
@@ -436,6 +440,7 @@ export class GameManager {
     }
     nominatedPlayer.nominated = true;
     player.nominating = false;
+    this.DrawCards(player);
     this.currentPlayerIndex = this.playerArray().findIndex(
       (p) => p.playerId === nominatedPlayerId
     );
@@ -448,8 +453,10 @@ export class GameManager {
         break;
       case CardEvent.DiscardPile:
         this.clearDiscardPile();
+        this.DrawCards(player);
         break;
       default:
+        this.DrawCards(player);
         break;
     }
   }
@@ -464,7 +471,7 @@ export class GameManager {
     return null;
   }
 
-  selectBestCards(playerId: string, cards: Card[]) {
+  selectBestCards(playerId: string, cards: CardType[]) {
     let player = this.players.get(playerId);
     if (!player) {
       return;
@@ -475,6 +482,7 @@ export class GameManager {
     }
 
     let cardsToSelect = cards
+      .map(newCard)
       .map((c) => player!.removeCardFromHand(c))
       .filter((c) => c !== null);
     if (!cardsToSelect || cardsToSelect.length === 0) {
@@ -488,9 +496,10 @@ export class GameManager {
 
   drawCard(player: Player) {
     if (this.deck.length === 0) {
+      return;
     }
 
-    player.hand.push(this.deck.pop()!);
+    player._hand = [...player._hand, this.deck.pop()!];
   }
 
   getTopDiscard() {
@@ -536,14 +545,33 @@ export class GameManager {
   }
 
   pickUpPile(player: Player) {
-    player.hand = player.hand.concat(this.discardPile);
+    player._hand = player._hand.concat(
+      this.discardPile.map((c) =>
+        c.card === CardNumber.One ? { card: CardNumber.Ace, suit: c.suit } : c
+      )
+    );
     this.clearDiscardPile();
+    player.nominated = false;
     this.currentPlayerIndex = this.getNextPlayer();
   }
 
   getGameState(): GameState {
     console.log("Game state: ", this);
-    return new GameState(this);
+    return {
+      currentPlayer: this.getCurrentPlayer(),
+      cardSelectingState: this.choosingBestCards,
+      gameStarted: this.gameStarted,
+      history: this.history,
+      pickupDeckNumber: this.deck.length,
+      players: this.playerArray().map(
+        (p) => new OtherPlayer(p, this.getPlayerStatus(p.playerId))
+      ),
+      startingPlayers: this.startingPlayers,
+      winners: this.winners,
+      discardPile: this.discardPile,
+      bottomDiscardPile: this.bottomDiscardPile,
+      lastCardsPlayed: this.lastCardsPlayed,
+    };
   }
 
   getPlayerState(player: Player): PlayerState {
@@ -558,7 +586,7 @@ export class GameManager {
     };
 
     return {
-      hand: player.hand,
+      hand: player._hand,
       name: player.name,
       isNominating: me.nominating,
       isNominated: me.nominated,
@@ -571,10 +599,10 @@ export class GameManager {
 
   addHistory(
     message: string,
-    player?: Player,
+    playerName?: string,
     cardsAttempted?: Card[],
     successful?: boolean
   ) {
-    this.history.push({ message, player, cardsAttempted, successful });
+    this.history.push({ message, playerName, cardsAttempted, successful });
   }
 }

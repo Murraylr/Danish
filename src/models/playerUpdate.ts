@@ -1,9 +1,9 @@
-import { Card } from "./card";
+import { Card, CardType } from "./card";
 import { OtherPlayer } from "./otherPlayer";
 import { Player, VisiblePlayer } from "./player";
 
 export interface PlayerState {
-  hand: Card[];
+  hand: readonly CardType[];
   name: string;
   isNominating: boolean;
   isNominated: boolean;

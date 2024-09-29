@@ -1,10 +1,10 @@
 import React from "react";
-import { Card } from "../../models/card";
+import { Card, CardType } from "../../models/card";
 import FaceUpCard from "../card/card";
 
 interface DiscardPileProps {
-  cards: Card[];
-  lastCardsPlayed: Card[];
+  cards: CardType[];
+  lastCardsPlayed: CardType[];
 }
 
 const DiscardPile: React.FC<DiscardPileProps> = ({
@@ -35,14 +35,14 @@ const DiscardPile: React.FC<DiscardPileProps> = ({
 
 const deckStyle: React.CSSProperties = {
   position: "relative",
-  width: "10em",
-  height: "33vh",
   margin: "1em",
+  minWidth: "6em",
+  width: '50%',
 };
 
 const cardStyle: React.CSSProperties = {
   position: "absolute",
-  height: "25vh",
+  minWidth: "6em",
 };
 
 export default DiscardPile;

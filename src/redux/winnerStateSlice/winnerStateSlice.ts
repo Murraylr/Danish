@@ -7,7 +7,7 @@ import {
 } from "@reduxjs/toolkit";
 import { useSelector } from "react-redux";
 import { State } from "../state";
-import { GameState, getClientState } from "../../models/gameState";
+import { GameState } from "../../models/gameState";
 import { GameManager } from "../../services/gameManager/gameManager";
 import { Player } from "../../models/player";
 import { PlayerWonModel } from "../../models/playerWonModel";
@@ -28,7 +28,7 @@ const caseReducers: WinnerStateReducer = {
     state.winnerIds = uniq([...state.winnerIds, action.payload]);
     return state;
   },
-  clearWinners: (state: WinnerState) => {
+  clearWinners: (state: WinnerState, action: PayloadAction) => {
     state.winnerIds = [];
   },
 };

@@ -18,10 +18,7 @@ type PlayerStateReducer = {
 
 const caseReducers: PlayerStateReducer = {
     setPlayerState: (state: (ReduxPlayerState) | null, action: PayloadAction<PlayerState>) => {
-        state.playerState = {
-            ...action.payload,
-            hand: action.payload.hand.map(card => newCard(card))
-        };
+        state.playerState = action.payload;
         return state;
     },
     setInvalidPlay: (state: (ReduxPlayerState) | null, action: PayloadAction<CannotPlayCard | undefined>) => {
@@ -38,7 +35,9 @@ export const playerStateSlice = createSlice<ReduxPlayerState | null, PlayerState
 
 export const playerStateActions = playerStateSlice.actions;
 
-export const selectPlayerState = () => useSelector((state: State) => state.playerState.playerState);
+export const selectPlayerState = () => useSelector((state: State) => {
+    return state.playerState.playerState
+});
 export const selectInvalidAction = () => useSelector((state: State) => state.playerState.invalidPlay);
 
 export default playerStateSlice.reducer;

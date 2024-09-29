@@ -24,6 +24,7 @@ import {
   FormProps,
   Input,
   Layout,
+  Menu,
   Modal,
   notification,
   Space,
@@ -33,7 +34,7 @@ import DiscardPile from "../../components/discardPile/discardPile";
 import OpponentDeck from "../../components/opponentDeck/opponentDeck";
 import { Card } from "antd";
 import { GameState } from "../../models/gameState";
-import { PlayerState } from "../../models/playerUpdate";
+import { GetMeModel, PlayerState } from "../../models/playerUpdate";
 import { Room } from "../../models/room";
 import { JoinRoomModel } from "../../models/joinRoomModel";
 import { ChatMessage } from "../../models/chatMessage";
@@ -41,13 +42,17 @@ import { set } from "lodash";
 import Deck from "../../components/deck/deck";
 import { TestParameters } from "../../models/testParameters";
 import DeveloperForm from "../../components/developerForm/developerForm";
-import { selectWinners, winnerStateActions } from "../../redux/winnerStateSlice/winnerStateSlice";
+import {
+  selectWinners,
+  winnerStateActions,
+} from "../../redux/winnerStateSlice/winnerStateSlice";
 import { CannotPlayCard } from "../../models/cannotPlayCardModel";
 import HistoryTab from "../../components/historyTab/historyTab";
 import PlayArea from "../../components/playArea/playArea";
 import { useDispatch } from "react-redux";
+import MyHeader from "../../components/header/header";
 
-const { Header, Footer, Sider, Content } = Layout;
+const { Header, Sider, Content } = Layout;
 
 interface GameRoomProps {}
 
@@ -97,14 +102,6 @@ tabList.set("controls", {
   },
 });
 
-tabList.set("history", {
-  key: "history",
-  tab: "History",
-  render(gameState, playerState, roomModel) {
-    return <HistoryTab history={gameState.history} />;
-  },
-});
-
 tabList.set("developer", {
   key: "developer",
   tab: "Developer",
@@ -131,15 +128,28 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    socket.on(
-      SocketEvents.StartGame,
-      () => {
-        setIsVictoryModalOpen(false);
-        setIsDefeatModalOpen(false);
-        victors.current = 0;
-        dispatch(winnerStateActions.clearWinners());
-      }
-    );
+    if (!roomModel?.roomName || !playerState?.me?.playerId) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const getMeModel: GetMeModel = {
+        playerId: playerState?.me?.playerId,
+        roomName: roomModel.roomName,
+      };
+      socket.emit(SocketEvents.GetMe, getMeModel);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [roomModel?.roomName, playerState?.me?.playerId]);
+
+  useEffect(() => {
+    socket.on(SocketEvents.RestartGame, () => {
+      setIsVictoryModalOpen(false);
+      setIsDefeatModalOpen(false);
+      victors.current = 0;
+      dispatch(winnerStateActions.clearWinners());
+    });
   }, []);
 
   useEffect(() => {
@@ -211,139 +221,136 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
   }
 
   return (
-    <Flex vertical>
-      <Header style={headerStyle}>Room: {roomModel.roomName}</Header>
-      <Flex>
-        <Flex flex={1} vertical justify="space-between">
-          {gameState && playerState && (
-            <>
-              <Flex
-                style={opponentsContainer}
-                justify="space-evenly"
-                flex={"0 0 10em"}
-              >
-                {playerState.otherPlayers.map((player, index) => (
-                  <OpponentDeck player={player} />
-                ))}
-              </Flex>
-
-              <Flex>
-                <div style={playAreaSection} />
-                <PlayArea style={{ flex: 2 }} />
-                <Flex style={{ ...playAreaSection, maxWidth: "40vw" }} vertical>
-                  <Card
-                    style={{ width: "100%" }}
-                    tabList={Array.from(tabList.values())}
-                    activeTabKey={activeTabKey}
-                    onTabChange={onTabChange}
+    <Layout style={{ height: '100%' }}>
+      <Sider width={'3em'}>
+        <MyHeader roomName={roomModel.roomName} />
+      </Sider>
+      <Content>
+        <Flex vertical>
+          <Flex>
+            <Flex flex={1} vertical justify="space-between">
+              {gameState && playerState && (
+                <>
+                  <Flex
+                    style={opponentsContainer}
+                    justify="space-evenly"
+                    flex={"0 0 10em"}
                   >
-                    {tabList
-                      .get(activeTabKey)
-                      ?.render(gameState, playerState, roomModel, messages)}
-                  </Card>
-                </Flex>
-              </Flex>
-              <Flex justify="center" flex={1}>
-                {!gameState.gameStarted && (
-                  <Button
-                    onClick={() =>
-                      socket.emit(SocketEvents.MarkReady, {
-                        roomName: roomModel!.roomName,
-                        playerId: playerState!.me.playerId,
-                        ready: playerState.me.ready ? false : true,
-                      })
-                    }
-                  >
-                    {playerState.me.ready ? "Cancel" : "Ready"}
-                  </Button>
-                )}
-                <MyCards cards={playerState.hand} />
-              </Flex>
-            </>
-          )}
-          {contextHolder}
-          <Modal
-            title="Victory!"
-            open={victoryModalOpen}
-            onOk={() => {
-              setIsVictoryModalOpen(false);
-              socket.emit(SocketEvents.RestartGame, roomModel.roomName);
-            }}
-            okText="Rematch"
-            cancelText="Bow before me mortals!"
-            onCancel={() => setIsVictoryModalOpen(false)}
-          >
-            <p>All hail the mightiest of winners!</p>
-          </Modal>
-          <Modal
-            title="Defeat!"
-            open={defeatModalOpen}
-            onOk={() => {
-              setIsDefeatModalOpen(false);
-              socket.emit(SocketEvents.RestartGame, roomModel.roomName);
-            }}
-            okText="Rematch"
-            cancelText="Stop! I yield to your superior skills!"
-            onCancel={() => setIsDefeatModalOpen(false)}
-          >
-            Shame and dishonour on your family! You have lost against the might
-            of your opponent.
-          </Modal>
+                    {playerState.otherPlayers.map((player, index) => (
+                      <OpponentDeck player={player} key={index} />
+                    ))}
+                  </Flex>
 
-          <Modal
-            title="Please enter your name"
-            open={nameModalOpen}
-            onOk={() => {
-              nameForm.validateFields().then(() => {
-                let name = nameForm.getFieldValue("name");
-                joinroom({ ...roomModel, playerName: name });
-                setNameModalOpen(false);
-              });
-            }}
-            onCancel={() => {
-              setNameModalOpen(false);
-              navigate("/");
-            }}
-            okText="Submit"
-          >
-            <Form form={nameForm} layout="vertical">
-              <Form.Item
-                label="Name"
-                name="name"
-                required
-                rules={[{ required: true, message: "Please enter a name." }]}
+                  <Flex justify="center">
+                    {/* <div style={playAreaSection} /> */}
+                    <PlayArea style={{  }} />
+                    {/* <div style={playAreaSection} /> */}
+                    {/* <Flex
+                      style={{ ...playAreaSection, maxWidth: "40vw" }}
+                      vertical
+                    >
+                      <Card
+                        style={{ width: "100%" }}
+                        tabList={Array.from(tabList.values())}
+                        activeTabKey={activeTabKey}
+                        onTabChange={onTabChange}
+                      >
+                        {tabList
+                          .get(activeTabKey)
+                          ?.render(gameState, playerState, roomModel, messages)}
+                      </Card>
+                    </Flex> */}
+                  </Flex>
+                  <Flex justify="center" flex={1}>
+                    {!gameState.gameStarted && (
+                      <Button
+                        onClick={() =>
+                          socket.emit(SocketEvents.MarkReady, {
+                            roomName: roomModel!.roomName,
+                            playerId: playerState!.me.playerId,
+                            ready: playerState.me.ready ? false : true,
+                          })
+                        }
+                      >
+                        {playerState.me.ready ? "Cancel" : "Ready"}
+                      </Button>
+                    )}
+                    <MyCards cards={playerState.hand} />
+                  </Flex>
+                </>
+              )}
+              {contextHolder}
+              <Modal
+                title="Victory!"
+                open={victoryModalOpen}
+                onOk={() => {
+                  setIsVictoryModalOpen(false);
+                  socket.emit(SocketEvents.RestartGame, roomModel.roomName);
+                }}
+                okText="Rematch"
+                cancelText="Bow before me mortals!"
+                onCancel={() => setIsVictoryModalOpen(false)}
               >
-                <Input />
-              </Form.Item>
-            </Form>
-          </Modal>
+                <p>All hail the mightiest of winners!</p>
+              </Modal>
+              <Modal
+                title="Defeat!"
+                open={defeatModalOpen}
+                onOk={() => {
+                  setIsDefeatModalOpen(false);
+                  socket.emit(SocketEvents.RestartGame, roomModel.roomName);
+                }}
+                okText="Rematch"
+                cancelText="Stop! I yield to your superior skills!"
+                onCancel={() => setIsDefeatModalOpen(false)}
+              >
+                Shame and dishonour on your family! You have lost against the
+                might of your opponent.
+              </Modal>
+
+              <Modal
+                title="Please enter your name"
+                open={nameModalOpen}
+                onOk={() => {
+                  nameForm.validateFields().then(() => {
+                    let name = nameForm.getFieldValue("name");
+                    joinroom({ ...roomModel, playerName: name });
+                    setNameModalOpen(false);
+                  });
+                }}
+                onCancel={() => {
+                  setNameModalOpen(false);
+                  navigate("/");
+                }}
+                okText="Submit"
+              >
+                <Form form={nameForm} layout="vertical">
+                  <Form.Item
+                    label="Name"
+                    name="name"
+                    required
+                    rules={[
+                      { required: true, message: "Please enter a name." },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+                </Form>
+              </Modal>
+            </Flex>
+          </Flex>
         </Flex>
-      </Flex>
-    </Flex>
+      </Content>
+    </Layout>
   );
-};
-
-const middleContainer: React.CSSProperties = {
-  justifyContent: "center",
-  flexGrow: 1,
 };
 
 const opponentsContainer: React.CSSProperties = {
   maxHeight: "25vh",
 };
 
-const gameRoomContainer: React.CSSProperties = {
-  maxHeight: "100vh",
-};
-
 const playAreaSection: React.CSSProperties = {
   flex: "1",
-};
-
-const headerStyle: React.CSSProperties = {
-  textAlign: "center",
-  color: "#fff",
-  backgroundColor: "#4096ff",
 };
 
 export default GameRoom;

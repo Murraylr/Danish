@@ -19,7 +19,7 @@ const DownFacingCardDeck: React.FC<Props> = ({ bestCards, blindCards }) => {
           zIndex: index,
         };
 
-        return <CardBack style={style} />;
+        return <CardBack key={index} style={style} />;
       })}
 
       {Array.from({ length: bestCards }).map((_, index) => {
@@ -29,7 +29,7 @@ const DownFacingCardDeck: React.FC<Props> = ({ bestCards, blindCards }) => {
           zIndex: index,
         };
 
-        return <CardBack style={style} />;
+        return <CardBack  key={index} style={style} />;
       })}
     </Flex>
   );

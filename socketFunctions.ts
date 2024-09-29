@@ -13,6 +13,7 @@ import { PlayerWonModel } from "./src/models/playerWonModel";
 import { TestParameters } from "./src/models/testParameters";
 import { CannotPlayCard } from "./src/models/cannotPlayCardModel";
 import { createShuffledDeck } from "./src/services/gameManager/gameFunctions";
+import { OtherPlayer } from "./src/models/otherPlayer";
 
 const roomManager = new RoomManager();
 
@@ -41,7 +42,7 @@ export function InitialiseConnection(
     let gameManager = gameRoom?.gameManager;
     let player = gameManager?.players.get(playerId);
 
-    gameRoom?.gameManager.winners.push(player);
+    gameRoom?.gameManager.winners.push(new OtherPlayer(player, ''));
     const playerWonModel: PlayerWonModel = {
       player,
       position: gameManager?.winners.length,
@@ -133,6 +134,11 @@ export function InitialiseConnection(
     },
 
     startGame,
+
+    restartGame: function (roomName: string) {
+      startGame(roomName);
+      socket.to(roomName).emit(SocketEvents.RestartGame);
+    },
 
     sendMessage: function (message: ChatMessage) {
       let room = roomManager.getRoom(message.roomName);
@@ -249,7 +255,7 @@ export function InitialiseConnection(
 
       gameManager.players.forEach((player) => {
         player.bestCards = [];
-        player.hand = [];
+        player._hand = [];
         player._blindCards = [];
         player.inGame = true;
         player.markReady();
@@ -276,7 +282,7 @@ export function InitialiseConnection(
 
       for (let i = 0; i < testParams.handAmount; i++) {
         for (let player of gameManager.playerArray()) {
-          player.hand.push(deck.pop()!);
+          player._hand = [...player._hand, deck.pop()!];
         }
       }
 

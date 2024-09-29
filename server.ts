@@ -16,10 +16,15 @@ declare module "express-session" {
 
 const app = express();
 const sessionMiddleware = session({
-  secret: "fhdfhdfgjjbjakslkfkadgbjewlkgnkjwekrj;oq kpeo20385983409ptymn4 2ei8psu099g05oihyt983409",
+  secret:
+    "fhdfhdfgjjbjakslkfkadgbjewlkgnkjwekrj;oq kpeo20385983409ptymn4 2ei8psu099g05oihyt983409",
   resave: true,
   saveUninitialized: true,
   store: new session.MemoryStore(),
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24, // 1 day
+    sameSite: "lax",
+  },
 });
 app.use(sessionMiddleware);
 app.use(
@@ -34,7 +39,7 @@ var clientPath =
     ? path.join(__dirname, "client")
     : path.join(__dirname, "build", "client");
 
-app.get('/ads.txt', (req, res) => {
+app.get("/ads.txt", (req, res) => {
   res.sendFile(path.join(clientPath, "ads.txt"));
 });
 
@@ -68,13 +73,13 @@ const io = new Server(server, {
   },
   connectionStateRecovery: {
     maxDisconnectionDuration: 2 * 60 * 1000,
-  }
+  },
 });
 io.engine.use(sessionMiddleware);
 
 io.on("connection", (socket: Socket) => {
   const request = socket.request as Request;
-  console.log('HERE');
+  console.log("HERE");
   request.session.save();
 
   if (process.env.ENVIRONMENT === "dev") {
@@ -86,7 +91,7 @@ io.on("connection", (socket: Socket) => {
     return;
   }
 
-  console.log('HERE 2')
+  console.log("HERE 2");
 
   console.log("a user connected with sessionID: ", request.session.playerId);
   let connection = InitialiseConnection(socket, io, request.session.playerId);
@@ -101,7 +106,7 @@ io.on("connection", (socket: Socket) => {
   socket.on(SocketEvents.SelectBestCard, connection.selectBestCard);
   socket.on(SocketEvents.SelectNomination, connection.selectNomination);
   socket.on(SocketEvents.PickUp, connection.pickUp);
-  socket.on(SocketEvents.RestartGame, connection.startGame);
+  socket.on(SocketEvents.RestartGame, connection.restartGame);
 
   if (process.env.ENVIRONMENT === "dev") {
     socket.on(SocketEvents.SetTest, connection.setTest);

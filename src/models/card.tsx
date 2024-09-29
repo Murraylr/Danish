@@ -53,7 +53,7 @@ import QueenOfDiamonds from "../components/cardImages/diamonds_queen";
 import KingOfDiamonds from "../components/cardImages/diamonds_king";
 
 export enum CardNumber {
-  Ace = "Ace",
+  One = 1,
   Two = 2,
   Three = 3,
   Four = 4,
@@ -66,6 +66,7 @@ export enum CardNumber {
   Jack = "Jack",
   Queen = "Queen",
   King = "King",
+  Ace = "Ace",
 }
 
 export enum Suit {
@@ -82,8 +83,13 @@ export enum CardEvent {
   Back,
 }
 
+export type CardType = {
+  card: CardNumber;
+  suit: Suit;
+}
+
 export class Card {
-  card!: CardNumber;
+  card: CardNumber;
   suit: Suit;
   isMagicCard: boolean;
   isPowerCard: boolean;
@@ -92,10 +98,11 @@ export class Card {
   /**
    *
    */
-  constructor(suit: Suit) {
+  constructor(card: CardType) {
     this.isMagicCard = false;
     this.isPowerCard = false;
-    this.suit = suit;
+    this.suit = card.suit;
+    this.card = card.card;
   }
 
   getNumber(): number {
@@ -108,6 +115,13 @@ export class Card {
 
   getName(): string {
     return this.card.toString();
+  }
+
+  getCardType(): CardType {
+    return {
+      card: this.card,
+      suit: this.suit,
+    };
   }
 
   canPlay(onCards: Card[], onFailCallback?: (message: string) => void) {
@@ -153,7 +167,7 @@ export class Card {
     }
 
     let cardIndex = onCards.length - 1;
-    let card: Card = onCards[cardIndex];
+    let card: Card = newCard(onCards[cardIndex]);
 
     while (cardIndex >= 0 && card.card === CardNumber.Eight) {
       cardIndex--;
@@ -169,11 +183,8 @@ export class Card {
     }
 
     let topCard = this.getTopCard(onCards);
-    if (topCard.card !== CardNumber.Ace) {
-      return false;
-    }
 
-    return !(topCard as Ace).isOne;
+    return topCard.card === CardNumber.Ace;
   }
 
   render(style?: React.CSSProperties): JSX.Element {
@@ -183,15 +194,12 @@ export class Card {
 
 export class Ace extends Card {
   constructor(suit: Suit, isOne: boolean = false) {
-    super(suit);
-    this.card = CardNumber.Ace;
+    super({ card: isOne ? CardNumber.One : CardNumber.Ace, suit: suit });
     this.isMagicCard = true;
-    this.isOne = isOne;
   }
   isMagicCard: boolean = true;
   isPowerCard: boolean = false;
   card: CardNumber;
-  isOne: boolean = false;
   canPlay() {
     return true;
   }
@@ -220,8 +228,7 @@ export class Ace extends Card {
 
 export class Two extends Card {
   constructor(suit: Suit) {
-    super(suit);
-    this.card = CardNumber.Two;
+    super({ card: CardNumber.Two, suit: suit });
     this.isMagicCard = true;
   }
 
@@ -245,8 +252,7 @@ export class Two extends Card {
 
 export class Three extends Card {
   constructor(suit: Suit) {
-    super(suit);
-    this.card = CardNumber.Three;
+    super({ card: CardNumber.Three, suit: suit });
   }
 
   render(style?: React.CSSProperties): JSX.Element {
@@ -265,8 +271,7 @@ export class Three extends Card {
 
 export class Four extends Card {
   constructor(suit: Suit) {
-    super(suit);
-    this.card = CardNumber.Four;
+    super({ card: CardNumber.Four, suit: suit });
   }
 
   render(style?: React.CSSProperties): JSX.Element {
@@ -285,8 +290,7 @@ export class Four extends Card {
 
 export class Five extends Card {
   constructor(suit: Suit) {
-    super(suit);
-    this.card = CardNumber.Five;
+    super({ card: CardNumber.Five, suit: suit });
   }
 
   render(style?: React.CSSProperties): JSX.Element {
@@ -305,8 +309,7 @@ export class Five extends Card {
 
 export class Six extends Card {
   constructor(suit: Suit) {
-    super(suit);
-    this.card = CardNumber.Six;
+    super({ card: CardNumber.Six, suit: suit });
   }
 
   render(style?: React.CSSProperties): JSX.Element {
@@ -325,8 +328,7 @@ export class Six extends Card {
 
 export class Seven extends Card {
   constructor(suit: Suit) {
-    super(suit);
-    this.card = CardNumber.Seven;
+    super({ card: CardNumber.Seven, suit: suit });
     this.isPowerCard = true;
   }
 
@@ -346,8 +348,7 @@ export class Seven extends Card {
 
 export class Eight extends Card {
   constructor(suit: Suit) {
-    super(suit);
-    this.card = CardNumber.Eight;
+    super({ card: CardNumber.Eight, suit: suit });
     this.isMagicCard = true;
   }
 
@@ -380,8 +381,7 @@ export class Eight extends Card {
 
 export class Nine extends Card {
   constructor(suit: Suit) {
-    super(suit);
-    this.card = CardNumber.Nine;
+    super({ card: CardNumber.Nine, suit: suit });
     this.isPowerCard = true;
   }
 
@@ -401,8 +401,7 @@ export class Nine extends Card {
 
 export class Ten extends Card {
   constructor(suit: Suit) {
-    super(suit);
-    this.card = CardNumber.Ten;
+    super({ card: CardNumber.Ten, suit: suit });
     this.isMagicCard = true;
   }
 
@@ -436,8 +435,7 @@ export class Ten extends Card {
 
 export class Jack extends Card {
   constructor(suit: Suit) {
-    super(suit);
-    this.card = CardNumber.Jack;
+    super({ card: CardNumber.Jack, suit: suit });
   }
 
   getNumber(): number {
@@ -460,8 +458,7 @@ export class Jack extends Card {
 
 export class Queen extends Card {
   constructor(suit: Suit) {
-    super(suit);
-    this.card = CardNumber.Queen;
+    super({ card: CardNumber.Queen, suit: suit });
   }
 
   getNumber(): number {
@@ -484,7 +481,7 @@ export class Queen extends Card {
 
 export class King extends Card {
   constructor(suit: Suit) {
-    super(suit);
+    super({ card: CardNumber.King, suit: suit });
     this.card = CardNumber.King;
   }
 
@@ -506,11 +503,12 @@ export class King extends Card {
   }
 }
 
-export function newCard(card: Card): Card {
+export function newCard(card: CardType): Card {
   switch (card.card) {
+    case CardNumber.One:
+      return new Ace(card.suit, true);
     case CardNumber.Ace:
-      let ace = card as Ace;
-      return new Ace(ace.suit, ace.isOne);
+      return new Ace(card.suit, false);
     case CardNumber.Two:
       return new Two(card.suit);
     case CardNumber.Three:

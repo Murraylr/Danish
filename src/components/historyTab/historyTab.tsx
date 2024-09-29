@@ -13,7 +13,7 @@ const HistoryTab: React.FC<HistoryTabProps> = ({ history }) => {
         <h2>Game History</h2>
         {history.map((history, index) => (
           <div key={index}>
-            {history?.player?.name} {history.message}
+            {history?.playerName} {history.message}
           </div>
         ))}
       </Flex>

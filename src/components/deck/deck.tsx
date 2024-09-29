@@ -8,13 +8,14 @@ interface DeckProps {
 
 const Deck: React.FC<DeckProps> = ({ deckNumber }) => {
   return (
-    <Flex vertical justify="center" align="center">
-      <Flex style={deckStyle}>
-        {Array.from({ length: deckNumber }).map((_, index) => (
-          <CardBack style={{ ...cardStyle, left: index * 1, zIndex: index }} />
-        ))}
-      </Flex>
-      <span>Remaining cards: {deckNumber}</span>
+    <Flex style={deckStyle} vertical justify="flex-end">
+      {Array.from({ length: deckNumber }).map((_, index) => (
+        <CardBack
+          key={index}
+          style={{ ...cardStyle, left: index * 1, zIndex: index, top: 0, }}
+        />
+      ))}
+
     </Flex>
   );
 };
@@ -22,13 +23,16 @@ const Deck: React.FC<DeckProps> = ({ deckNumber }) => {
 const deckStyle: React.CSSProperties = {
   position: "relative",
   width: "10em",
-  height: "25vh",
-  margin: '1em',
+  height: "27vh",
+  margin: "1em",
+};
+
+const remainingCards: React.CSSProperties = {
+
 };
 
 const cardStyle: React.CSSProperties = {
   position: "absolute",
-  height: "25vh",
 };
 
 export default Deck;
