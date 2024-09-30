@@ -13,7 +13,7 @@ const PlayArea: React.FC<Props> = ({ style }) => {
   const gameState = selectGameState();
 
   return (
-    <Flex vertical justify="center" align="center">
+    <Flex vertical justify="center" align="center" flex={1}>
       <Flex style={{ ...container, ...style }} justify="space-evenly">
         <DiscardPile
           cards={gameState.bottomDiscardPile}
@@ -28,7 +28,9 @@ const PlayArea: React.FC<Props> = ({ style }) => {
 
 const container: React.CSSProperties = {
   display: "flex",
-  minHeight: "10em",
+  width: '100%',
+  height: '100%',
+  maxWidth:'30em'
 };
 
 export default PlayArea;

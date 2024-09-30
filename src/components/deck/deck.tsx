@@ -12,27 +12,26 @@ const Deck: React.FC<DeckProps> = ({ deckNumber }) => {
       {Array.from({ length: deckNumber }).map((_, index) => (
         <CardBack
           key={index}
-          style={{ ...cardStyle, left: index * 1, zIndex: index, top: 0, }}
+          style={{ ...cardStyle, left: index * 1, zIndex: index, top: 0 }}
         />
       ))}
-
     </Flex>
   );
 };
 
 const deckStyle: React.CSSProperties = {
   position: "relative",
-  width: "10em",
-  height: "27vh",
-  margin: "1em",
+  width: "100%",
+  height: "100%",
+  flex: 1,
 };
 
-const remainingCards: React.CSSProperties = {
-
-};
+const remainingCards: React.CSSProperties = {};
 
 const cardStyle: React.CSSProperties = {
   position: "absolute",
+  width: "100%",
+  height: "100%",
 };
 
 export default Deck;

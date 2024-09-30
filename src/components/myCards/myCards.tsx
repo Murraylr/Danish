@@ -15,6 +15,7 @@ import { PickUpModel } from "../../models/pickUpModel";
 import { Button, Flex } from "antd";
 import Controls from "../controls/controls";
 import useGameStateService from "../../hooks/useGameStateService/useGameStateService";
+import useWindowDimensions from "../../hooks/useWindowDimensions/useWindowDimensions";
 
 interface MyCardsProps {
   cards: readonly CardType[];
@@ -28,6 +29,7 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
   const gameState = selectGameState();
   const gameFunctions = useGameStateService();
   const playerState = selectPlayerState();
+  const { height, width } = useWindowDimensions();
 
   const [selectedCardIndexes, setSelectedCardIndexes] = useState<number[]>([]);
 
@@ -44,7 +46,9 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
 
       if (
         !gameState.cardSelectingState &&
-        uniqBy([...selectedCardIndexes, index], i => sortedCards[i].getNumber()).length > 1
+        uniqBy([...selectedCardIndexes, index], (i) =>
+          sortedCards[i].getNumber()
+        ).length > 1
       ) {
         return;
       }
@@ -59,49 +63,62 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
   }
 
   return (
-    <Flex vertical>
+    <Flex vertical style={{ height: "100%", width: '100%', textAlign: 'center' }}>
       <div>{gameFunctions.getStatusMessage(playerState.me)}</div>
-      <Flex vertical justify="center" align="center">
+      <Flex vertical justify="center" align="center" style={container}>
         <Controls
           bestCards={playerState.me.bestCards}
           selectedCards={selectedCardIndexes.map((index) => sortedCards[index])}
           onConfirm={() => setSelectedCardIndexes([])}
         />
-        <Flex style={deckStyle}>
+        <Flex style={deckStyle} flex={2} vertical>
           {sortedCards.map((card, index) => {
             let isSelected = selectedCardIndexes.includes(index);
             let style: React.CSSProperties = {
               ...cardStyle,
-              left: index * 1.5 - (sortedCards.length - 4) * 0.7 + "em",
+              left: `calc(50% + ${((index) - ((sortedCards.length + 1) / 2 + (height / 400))) * 1.5}em)`,
               zIndex: index,
               top: isSelected ? "10px" : "20px",
             };
 
             return (
-              <div style={style} key={index} onClick={(e) => selectCard(index)}>
+              <div style={style} key={index} onClick={(e) => selectCard(index)} >
                 <FaceUpCard card={card}></FaceUpCard>
               </div>
             );
           })}
         </Flex>
-        <DownFacingCardDeck
-          bestCards={playerState?.me?.bestCards?.length || 0}
-          blindCards={playerState?.me?.blindCards || 0}
-        />
+        <Flex style={blindCardsContainer} flex={1}>
+          <DownFacingCardDeck
+            bestCards={playerState?.me?.bestCards?.length || 0}
+            blindCards={playerState?.me?.blindCards || 0}
+          />
+        </Flex>
       </Flex>
     </Flex>
   );
 };
 
+const container: React.CSSProperties = {
+  height: "100%",
+
+};
+
 const deckStyle: React.CSSProperties = {
   position: "relative",
-  width: "10em",
-  height: "11.5em",
+  height: "100%",
+  width: "100%",
+  marginBottom: '2em'
+};
+
+const blindCardsContainer: React.CSSProperties = {
+  width: "100%",
+  height: "100%",
 };
 
 const cardStyle: React.CSSProperties = {
   position: "absolute",
-  width: "7em",
+  height: "100%",
 };
 
 export default MyCards;

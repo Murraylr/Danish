@@ -221,47 +221,31 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
   }
 
   return (
-    <Layout style={{ height: '100%' }}>
-      <Sider width={'3em'}>
+    <Layout style={{ height: "100%", minHeight: "35em" }}>
+      <Sider width={"3em"}>
         <MyHeader roomName={roomModel.roomName} />
       </Sider>
-      <Content>
-        <Flex vertical style={{ height: '100%' }}>
-          <Flex style={{ height: '100%' }}>
-            <Flex flex={1} vertical justify="space-between" style={{ height: '100%' }}>
+      <Content style={content}>
+        <Flex vertical style={{ height: "100%" }}>
+          <Flex style={{ height: "100%" }}>
+            <Flex
+              flex={1}
+              vertical
+              justify="space-between"
+              style={{ height: "100%" }}
+            >
               {gameState && playerState && (
                 <>
-                  <Flex
-                    style={opponentsContainer}
-                    justify="space-evenly"
-                    flex={"0 0 10em"}
-                  >
+                  <Flex style={section} justify="space-evenly" flex={1}>
                     {playerState.otherPlayers.map((player, index) => (
                       <OpponentDeck player={player} key={index} />
                     ))}
                   </Flex>
 
-                  <Flex justify="center">
-                    {/* <div style={playAreaSection} /> */}
-                    <PlayArea style={{  }} />
-                    {/* <div style={playAreaSection} /> */}
-                    {/* <Flex
-                      style={{ ...playAreaSection, maxWidth: "40vw" }}
-                      vertical
-                    >
-                      <Card
-                        style={{ width: "100%" }}
-                        tabList={Array.from(tabList.values())}
-                        activeTabKey={activeTabKey}
-                        onTabChange={onTabChange}
-                      >
-                        {tabList
-                          .get(activeTabKey)
-                          ?.render(gameState, playerState, roomModel, messages)}
-                      </Card>
-                    </Flex> */}
+                  <Flex justify="center" style={section} flex={1}>
+                    <PlayArea style={{}} />
                   </Flex>
-                  <Flex justify="center" flex={1}>
+                  <Flex justify="center" style={section} flex={2}>
                     {!gameState.gameStarted && (
                       <Button
                         onClick={() =>
@@ -345,12 +329,16 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
   );
 };
 
-const opponentsContainer: React.CSSProperties = {
-  maxHeight: "25vh",
+const content: React.CSSProperties = {
+  backgroundImage: "url('/images/green-felt.jpg')",
+  backgroundSize: "cover",
+  color: "#EEE",
+  textShadow: "1px 1px 1px #000",
 };
 
-const playAreaSection: React.CSSProperties = {
-  flex: "1",
+const section: React.CSSProperties = {
+  flex: 1,
+  width: "100%",
 };
 
 export default GameRoom;

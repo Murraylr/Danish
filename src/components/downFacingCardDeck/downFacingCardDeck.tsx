@@ -11,11 +11,11 @@ const DownFacingCardDeck: React.FC<Props> = ({ bestCards, blindCards }) => {
   // Implement your component logic here
 
   return (
-    <Flex justify="space-around" gap={5} style={deckStyle}>
+    <Flex justify="space-around" style={deckStyle}>
       {Array.from({ length: blindCards }).map((_, index) => {
         let style: React.CSSProperties = {
           ...cardStyle,
-          left: index * 4 + "em",
+          left: (index - 1) * 4 + "em",
           zIndex: index,
         };
 
@@ -25,7 +25,7 @@ const DownFacingCardDeck: React.FC<Props> = ({ bestCards, blindCards }) => {
       {Array.from({ length: bestCards }).map((_, index) => {
         let style: React.CSSProperties = {
           ...cardStyle,
-          left: (index * 4) + 0.5 + "em",
+          left: ((index - 1) * 4) + 0.5 + "em",
           zIndex: index,
         };
 
@@ -37,13 +37,14 @@ const DownFacingCardDeck: React.FC<Props> = ({ bestCards, blindCards }) => {
 
 const deckStyle: React.CSSProperties = {
   position: "relative",
-  width: "11.5em",
-  height: "5em",
+  width: "100%",
+  height: "100%",
 };
 
 const cardStyle: React.CSSProperties = {
   position: "absolute",
-  width: "3em",
+  width: "100%",
+  height: "100%",
 };
 
 export default DownFacingCardDeck;
