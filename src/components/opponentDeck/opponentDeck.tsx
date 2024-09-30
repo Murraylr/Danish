@@ -7,12 +7,10 @@ import { selectGameState } from "../../redux/gameState/gameStateSlice";
 import useGameStateService from "../../hooks/useGameStateService/useGameStateService";
 
 interface OpponentDeckProps {
-  player: OtherPlayer
+  player: OtherPlayer;
 }
 
-const OpponentDeck: React.FC<OpponentDeckProps> = ({
-  player
-}) => {
+const OpponentDeck: React.FC<OpponentDeckProps> = ({ player }) => {
   const gameState = selectGameState();
   const gameFunctions = useGameStateService();
 
@@ -25,13 +23,20 @@ const OpponentDeck: React.FC<OpponentDeckProps> = ({
 
   return (
     <div style={container}>
-      <h3 style={headerStyle}>{player.name} {!!status ? `(${status})` : ''}</h3>
-      <DownFacingCardDeck bestCards={player.bestCards} blindCards={player.blindCards} />
-      <Flex style={deckStyle}>
+      <h3 style={headerStyle}>
+        {player.name} {!!status ? `(${status})` : ""}
+      </h3>
+      <Flex style={downCardContainer} flex={1}>
+        <DownFacingCardDeck
+          bestCards={player.bestCards}
+          blindCards={player.blindCards}
+        />
+      </Flex>
+      <Flex style={deckStyle} flex={2}>
         {Array.from({ length: player.cardsHeld }).map((_, index) => {
           let style: React.CSSProperties = {
             ...cardStyle,
-            left: index * 0.5 - (player.cardsHeld - 7) * 0.2 + "em",
+            left: (index + 1) * 0.7 - (player.cardsHeld / 2) * 0.7 + "em",
             zIndex: index,
           };
 
@@ -45,6 +50,7 @@ const OpponentDeck: React.FC<OpponentDeckProps> = ({
 const headerStyle: React.CSSProperties = {
   marginTop: "0.3em",
   marginBottom: "0.3em",
+  width: "100%",
 };
 
 const container: React.CSSProperties = {
@@ -52,17 +58,25 @@ const container: React.CSSProperties = {
   flexDirection: "column",
   alignItems: "center",
   flexBasis: "min-content",
+  width: "100%",
+  textAlign: "center",
+};
+
+const downCardContainer: React.CSSProperties = {
+  width: "100%",
+  height: "100%",
 };
 
 const deckStyle: React.CSSProperties = {
   position: "relative",
-  width: "10em",
-  height: "11.5em",
+  height: "100%",
+  width: "100%",
 };
 
 const cardStyle: React.CSSProperties = {
   position: "absolute",
-  width: "7em",
+  width: "100%",
+  height: "100%",
 };
 
 export default OpponentDeck;

@@ -24,7 +24,7 @@ const DiscardPile: React.FC<DiscardPileProps> = ({
       {lastCardsPlayed.map((card, index) => {
         let style: React.CSSProperties = {
           ...cardStyle,
-          left: (index * 5) + 20 + cards.length,
+          left: index * 5 + 20 + cards.length,
           zIndex: cards.length + index,
         };
         return <FaceUpCard key={index} style={style} card={card}></FaceUpCard>;
@@ -35,14 +35,14 @@ const DiscardPile: React.FC<DiscardPileProps> = ({
 
 const deckStyle: React.CSSProperties = {
   position: "relative",
-  margin: "1em",
-  minWidth: "6em",
-  width: '50%',
+  width: '100%',
+  height:'100%',
+  flex: 1,
 };
 
 const cardStyle: React.CSSProperties = {
   position: "absolute",
-  minWidth: "6em",
+  minWidth: "7em",
 };
 
 export default DiscardPile;

@@ -8,8 +8,8 @@ const SvgComponent = ({ style }: Props) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     xmlSpace="preserve"
-    width={"100%"}
-    height={"100%"}
+    width="234"
+    height="333"
     viewBox="0 0 187.182 266.908"
     style={style}
   >
