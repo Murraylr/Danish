@@ -51,6 +51,7 @@ import HistoryTab from "../../components/historyTab/historyTab";
 import PlayArea from "../../components/playArea/playArea";
 import { useDispatch } from "react-redux";
 import MyHeader from "../../components/header/header";
+import StartGameForm from "../../components/startGameForm/startGameForm";
 
 const { Header, Sider, Content } = Layout;
 
@@ -121,27 +122,24 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
   const [victoryModalOpen, setIsVictoryModalOpen] = useState(false);
   const [defeatModalOpen, setIsDefeatModalOpen] = useState(false);
   const [nameModalOpen, setNameModalOpen] = useState(false);
+  const [startGameModalOpen, setStartGameModalOpen] = useState(false);
   const [api, contextHolder] = notification.useNotification();
   const victors = useRef(0);
   const winners = selectWinners();
   const [nameForm] = Form.useForm();
   const dispatch = useDispatch();
 
-  // useEffect(() => {
-  //   if (!roomModel?.roomName || !playerState?.me?.playerId) {
-  //     return;
-  //   }
+  useEffect(() => {
+    if (!gameState) {
+      return;
+    }
 
-  //   const interval = setInterval(() => {
-  //     const getMeModel: GetMeModel = {
-  //       playerId: playerState?.me?.playerId,
-  //       roomName: roomModel.roomName,
-  //     };
-  //     socket.emit(SocketEvents.GetMe, getMeModel);
-  //   }, 1000);
-
-  //   return () => clearInterval(interval);
-  // }, [roomModel?.roomName, playerState?.me?.playerId]);
+    if (!gameState.gameStarted) {
+      setStartGameModalOpen(true);
+    } else {
+      setStartGameModalOpen(false);
+    }
+  }, [gameState?.gameStarted]);
 
   useEffect(() => {
     socket.on(SocketEvents.RestartGame, () => {
@@ -195,10 +193,6 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
     }
   }, [winners, playerState]);
 
-  const onTabChange = useCallback((key: string) => {
-    setActiveTabKey(key);
-  }, []);
-
   const joinroom = useCallback((model: JoinRoomModel) => {
     socket.emit(SocketEvents.JoinRoom, model);
     hasJoinedRoom.current = true;
@@ -246,19 +240,6 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
                     <PlayArea style={{}} />
                   </Flex>
                   <Flex justify="center" style={section} flex={2}>
-                    {!gameState.gameStarted && (
-                      <Button
-                        onClick={() =>
-                          socket.emit(SocketEvents.MarkReady, {
-                            roomName: roomModel!.roomName,
-                            playerId: playerState!.me.playerId,
-                            ready: playerState.me.ready ? false : true,
-                          })
-                        }
-                      >
-                        {playerState.me.ready ? "Cancel" : "Ready"}
-                      </Button>
-                    )}
                     <MyCards cards={playerState.hand} />
                   </Flex>
                 </>
@@ -290,6 +271,22 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
               >
                 Shame and dishonour on your family! You have lost against the
                 might of your opponent.
+              </Modal>
+
+              <Modal
+                title={`Room: ${roomModel?.roomName}`}
+                open={startGameModalOpen}
+                onOk={() => {
+                  socket.emit(SocketEvents.MarkReady, {
+                    roomName: roomModel!.roomName,
+                    playerId: playerState!.me.playerId,
+                    ready: playerState.me.ready ? false : true,
+                  });
+                }}
+                okText={playerState?.me?.ready ? "Unready" : "Ready"}
+                footer={null}
+              >
+                <StartGameForm />
               </Modal>
 
               <Modal

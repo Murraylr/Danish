@@ -1,7 +1,7 @@
 export enum SocketEvents {
 
     JoinRoom = "joinRoom",
-    RoomJoined = "roomJoined",
+    RoomUpdated = "roomUpdated",
     LeaveRoom = "leaveRoom",
     RoomLeft = "roomLeft",
 

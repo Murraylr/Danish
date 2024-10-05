@@ -15,6 +15,7 @@ import { PlayerWonModel } from "../../models/playerWonModel";
 import { CannotPlayCard } from "../../models/cannotPlayCardModel";
 import { winnerStateActions } from "../../redux/winnerStateSlice/winnerStateSlice";
 import { OtherPlayer } from "../../models/otherPlayer";
+import { Room, RoomState } from "../../models/room";
 const isProd = process.env.NODE_ENV === "production";
 
 
@@ -44,15 +45,8 @@ export const startSocketIO = (store: EnhancedStore<any, any, any>) => {
       dispatch(gameStateActions.setGameState(gameState));
     });
 
-    socket.on(SocketEvents.RoomJoined, (room: JoinRoomModel) => {
-      console.log("Room joined: ", room);
-      const getMeModel: GetMeModel = {
-        playerId: room.playerId,
-        roomName: room.roomName,
-      };
-      
-      socket.emit(SocketEvents.GetMe, getMeModel);
-      dispatch(roomStateActions.joinRoom(room));
+    socket.on(SocketEvents.RoomUpdated, (room: RoomState) => {
+      dispatch(roomStateActions.roomUpdated(room));
     });
 
     socket.on(SocketEvents.GameUpdate, (gameState: GameState) => {
@@ -72,7 +66,7 @@ export const startSocketIO = (store: EnhancedStore<any, any, any>) => {
       socket.off(SocketEvents.StartGame);
       socket.off(SocketEvents.GameUpdate);
       socket.off(SocketEvents.PlayerUpdate);
-      socket.off(SocketEvents.RoomJoined);
+      socket.off(SocketEvents.RoomUpdated);
     };
   });
 };
