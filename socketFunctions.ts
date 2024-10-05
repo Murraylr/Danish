@@ -91,7 +91,9 @@ export function InitialiseConnection(
       socket.join(roomModel.roomName);
       socket.join(`${roomModel.roomName}/${playerId}`);
       updateClient(roomModel.roomName);
-      io.to(room.roomName).emit(SocketEvents.RoomUpdated, room.getRoomState());
+      for(let [pId, p] of room.players){
+        io.to(`${roomModel.roomName}/${pId}`).emit(SocketEvents.RoomUpdated, room.getRoomState(pId));
+      }
       room.addSystemMessage(`${roomModel.playerName} has joined the room`);
       io.to(room.roomName).emit(SocketEvents.MessageSent, room.messages);
 

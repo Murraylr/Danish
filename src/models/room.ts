@@ -38,8 +38,9 @@ export class Room {
     });
   }
 
-  getRoomState(): RoomState {
+  getRoomState(myId: string): RoomState {
     return {
+      myId,
       messages: this.messages,
       players: Array.from(this.players.values()),
       roomName: this.roomName,
@@ -48,6 +49,7 @@ export class Room {
 }
 
 export class RoomState {
+  myId: string;
   roomName: string;
   messages: ChatMessage[] = [];
   players: Player[] = [];

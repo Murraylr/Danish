@@ -64,12 +64,12 @@ const StartGameForm: React.FC = () => {
                   }
                 />
                 <Flex vertical justify="space-between">
-                  {playerState?.me?.playerId === item.playerId && (
+                  {room?.myId === item.playerId && (
                     <Button
                       onClick={() => {
                         socket.emit(SocketEvents.MarkReady, {
-                          roomName: room!.roomName,
-                          playerId: playerState!.me.playerId,
+                          roomName: room.roomName,
+                          playerId: room.myId,
                           ready: playerState.me.ready ? false : true,
                         });
                       }}
