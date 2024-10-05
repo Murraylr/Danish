@@ -5,7 +5,7 @@ import { JoinRoomModel } from "../models/joinRoomModel";
 import { Params, useParams } from "react-router-dom";
 import { SessionStorage } from "../services/sessionStorage/sessionStorage";
 import { createSelector } from "@reduxjs/toolkit";
-import { Room } from "../models/room";
+import { Room, RoomState } from "../models/room";
 import { PlayerState } from "../models/playerUpdate";
 
 const roomModelSelector = createSelector(
@@ -13,7 +13,7 @@ const roomModelSelector = createSelector(
   (state: State) => state.playerState.playerState,
   (_, paramsRoomName: string) => paramsRoomName,
   (
-    room: Room,
+    room: RoomState,
     playerState: PlayerState,
     paramsRoomName: string
   ): JoinRoomModel | null => {

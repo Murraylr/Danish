@@ -556,7 +556,6 @@ export class GameManager {
   }
 
   getGameState(): GameState {
-    console.log("Game state: ", this);
     return {
       currentPlayer: this.getCurrentPlayer(),
       cardSelectingState: this.choosingBestCards,

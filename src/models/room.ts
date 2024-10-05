@@ -8,16 +8,18 @@ export class Room {
   gameManager: GameManager;
   roomName: string;
   messages: ChatMessage[] = [];
+  players: Map<string, Player>;
   /**
    *
    */
   constructor(roomName: string) {
     this.gameManager = new GameManager();
     this.roomName = roomName;
+    this.players = new Map();
   }
 
   addPlayer(player: Player) {
-    this.gameManager.addPlayer(player);
+    this.players.set(player.playerId, player);
   }
 
   addSystemMessage(message: string) {
@@ -35,4 +37,18 @@ export class Room {
       roomName: this.roomName,
     });
   }
+
+  getRoomState(): RoomState {
+    return {
+      messages: this.messages,
+      players: Array.from(this.players.values()),
+      roomName: this.roomName,
+    }
+  }
+}
+
+export class RoomState {
+  roomName: string;
+  messages: ChatMessage[] = [];
+  players: Player[] = [];
 }

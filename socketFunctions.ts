@@ -42,16 +42,20 @@ export function InitialiseConnection(
     let gameManager = gameRoom?.gameManager;
     let player = gameManager?.players.get(playerId);
 
-    gameRoom?.gameManager.winners.push(new OtherPlayer(player, ''));
+    gameRoom?.gameManager.winners.push(new OtherPlayer(player, ""));
     const playerWonModel: PlayerWonModel = {
       player,
       position: gameManager?.winners.length,
     };
-    io.to(roomName).emit(SocketEvents.PlayerWon, playerWonModel)
+    io.to(roomName).emit(SocketEvents.PlayerWon, playerWonModel);
   }
 
   function startGame(roomName: string) {
     let gameRoom = roomManager.getRoom(roomName);
+    for (let [_, player] of gameRoom!.players) {
+      gameRoom.gameManager.addPlayer(player);
+    }
+
     gameRoom?.gameManager.startGame();
     updateClient(roomName);
   }
@@ -75,13 +79,10 @@ export function InitialiseConnection(
       }
       let player: Player;
 
-      if (room.gameManager.players.has(playerId)) {
-        player = room.gameManager.players.get(playerId)!;
+      if (room.players.has(playerId)) {
+        player = room.players.get(playerId)!;
         player.connected = true;
       } else {
-        //let playerTwo = new Player("2", "Player 2");
-        //playerTwo.markReady();
-        //room.addPlayer(playerTwo)
         player = new Player(playerId, roomModel.playerName!);
         room.addPlayer(player);
       }
@@ -90,10 +91,7 @@ export function InitialiseConnection(
       socket.join(roomModel.roomName);
       socket.join(`${roomModel.roomName}/${playerId}`);
       updateClient(roomModel.roomName);
-      io.to(`${room.roomName}/${playerId}`).emit(
-        SocketEvents.RoomJoined,
-        roomModel
-      );
+      io.to(room.roomName).emit(SocketEvents.RoomUpdated, room.getRoomState());
       room.addSystemMessage(`${roomModel.playerName} has joined the room`);
       io.to(room.roomName).emit(SocketEvents.MessageSent, room.messages);
 
@@ -127,10 +125,6 @@ export function InitialiseConnection(
         SocketEvents.MessageSent,
         gameRoom?.messages
       );
-
-      if (gameRoom?.gameManager.playerArray().every((player) => player.ready)) {
-        startGame(playerReady.roomName);
-      }
     },
 
     startGame,
@@ -161,9 +155,10 @@ export function InitialiseConnection(
         let cannotPlayCard: CannotPlayCard = {
           message: error,
         };
-        io
-          .to(`${turn.room.roomName}/${playerId}`)
-          .emit(SocketEvents.CannotPlayCard, cannotPlayCard);
+        io.to(`${turn.room.roomName}/${playerId}`).emit(
+          SocketEvents.CannotPlayCard,
+          cannotPlayCard
+        );
       });
 
       let winner = gameRoom?.gameManager.hasPlayerWon(player);
@@ -261,7 +256,7 @@ export function InitialiseConnection(
         player.markReady();
       });
 
-      let deck = createShuffledDeck();;
+      let deck = createShuffledDeck();
       gameManager.deck = [];
 
       for (let i = 0; i < testParams.deckAmount; i++) {

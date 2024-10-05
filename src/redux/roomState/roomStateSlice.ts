@@ -1,22 +1,18 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import {
-  createSlice,
-  Slice,
-  PayloadAction,
-} from "@reduxjs/toolkit";
+import { createSlice, Slice, PayloadAction } from "@reduxjs/toolkit";
 import { useSelector } from "react-redux";
 import { State } from "../state";
-import { Room } from "../../models/room";
+import { Room, RoomState } from "../../models/room";
 
 const caseReducers: any = {
-  joinRoom: (state: Room, action: PayloadAction<Room>) => {
+  roomUpdated: (state: RoomState, action: PayloadAction<RoomState>) => {
     state = action.payload;
     return state;
   },
 };
 
 export const roomStateSlice: Slice = createSlice<
-  Room | null,
+  RoomState | null,
   any,
   string,
   any,
