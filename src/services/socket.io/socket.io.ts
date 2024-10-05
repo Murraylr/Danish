@@ -46,6 +46,11 @@ export const startSocketIO = (store: EnhancedStore<any, any, any>) => {
     });
 
     socket.on(SocketEvents.RoomUpdated, (room: RoomState) => {
+      const getMeModel: GetMeModel = {
+        playerId: room.myId,
+        roomName: room.roomName,
+      };
+      socket.emit(SocketEvents.GetMe, getMeModel);
       dispatch(roomStateActions.roomUpdated(room));
     });
 
