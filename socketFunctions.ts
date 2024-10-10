@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
 import { JoinRoomModel } from "./src/models/joinRoomModel";
-import { Player } from "./src/models/player";
+import { Player, PlayingPlayer, RoomPlayer } from "./src/models/player";
 import { RoomManager } from "./src/services/roomManager/roomManager";
 import { SocketEvents } from "./src/models/socketEvents";
 import { Turn } from "./src/models/turn";
@@ -29,10 +29,15 @@ export function InitialiseConnection(
       SocketEvents.GameUpdate,
       room?.gameManager.getGameState()
     );
-    for (let [id, player] of room!.gameManager.players) {
+    io.to(roomName).emit(
+      SocketEvents.RoomUpdated,
+      room?.getRoomState()
+    );
+    for (let [id, player] of room!.players) {
+      let roomPlayer = room?.gameManager.players.get(id);
       io.to(`${roomName}/${id}`).emit(
         SocketEvents.PlayerUpdate,
-        room?.gameManager.getPlayerState(player)
+        room?.gameManager.getPlayerState(Object.assign({}, roomPlayer, player))
       );
     }
   }
@@ -42,7 +47,7 @@ export function InitialiseConnection(
     let gameManager = gameRoom?.gameManager;
     let player = gameManager?.players.get(playerId);
 
-    gameRoom?.gameManager.winners.push(new OtherPlayer(player, ""));
+    gameRoom?.gameManager.winners.push(new OtherPlayer(player));
     const playerWonModel: PlayerWonModel = {
       player,
       position: gameManager?.winners.length,
@@ -53,16 +58,17 @@ export function InitialiseConnection(
   function startGame(roomName: string) {
     let gameRoom = roomManager.getRoom(roomName);
     for (let [_, player] of gameRoom!.players) {
-      gameRoom.gameManager.addPlayer(player);
+      gameRoom.gameManager.addPlayer(new PlayingPlayer(player.playerId, player.name));
     }
 
+    socket.to(roomName).emit(SocketEvents.GameStarted);
     gameRoom?.gameManager.startGame();
     updateClient(roomName);
   }
 
   function leaveRoom(room: JoinRoomModel) {
     let gameRoom = roomManager.getRoom(room.roomName);
-    gameRoom?.gameManager.markDisconnected(playerId);
+    gameRoom?.markDisconnected(playerId);
     socket.leave(room.roomName);
     socket.leave(`${room.roomName}/${playerId}`);
     updateClient(room.roomName);
@@ -77,13 +83,13 @@ export function InitialiseConnection(
       if (!room) {
         room = roomManager.createRoom(roomModel.roomName);
       }
-      let player: Player;
+      let player: RoomPlayer;
 
       if (room.players.has(playerId)) {
         player = room.players.get(playerId)!;
         player.connected = true;
       } else {
-        player = new Player(playerId, roomModel.playerName!);
+        player = new RoomPlayer(playerId, roomModel.playerName!);
         room.addPlayer(player);
       }
       roomModel.playerId = player.playerId;
@@ -110,12 +116,12 @@ export function InitialiseConnection(
         return;
       }
 
-      gameRoom.gameManager.markPlayerReady(
+      gameRoom.markPlayerReady(
         playerReady.playerId,
         playerReady.ready
       );
 
-      let player = gameRoom?.gameManager.players.get(playerReady.playerId);
+      let player = gameRoom?.players.get(playerReady.playerId);
       gameRoom.addSystemMessage(
         playerReady.ready
           ? `Player ${player?.name} is ready`
@@ -194,9 +200,10 @@ export function InitialiseConnection(
 
     getMe: function (getMeModel: GetMeModel) {
       let gameRoom = roomManager.getRoom(getMeModel.roomName);
-      let player = gameRoom?.gameManager.players.get(getMeModel.playerId);
+      let roomPlayer = gameRoom?.players.get(getMeModel.playerId);
+      let gamePlayer = gameRoom?.gameManager.players.get(getMeModel.playerId);
 
-      if (!player) {
+      if (!roomPlayer) {
         return;
       }
       io.to(getMeModel.roomName).emit(
@@ -205,7 +212,7 @@ export function InitialiseConnection(
       );
       io.to(`${getMeModel.roomName}/${getMeModel.playerId}`).emit(
         SocketEvents.PlayerUpdate,
-        gameRoom?.gameManager.getPlayerState(player)
+        gameRoom?.gameManager.getPlayerState(Object.assign({}, roomPlayer, gamePlayer))
       );
     },
 
@@ -247,15 +254,18 @@ export function InitialiseConnection(
       gameManager.winners = [];
 
       for (let i = gameManager.players.size; i < testParams.numPlayers; i++) {
-        gameManager.addPlayer(new Player(i.toString(), `Player ${i}`));
+        gameManager.addPlayer(new PlayingPlayer(i.toString(), `Player ${i}`));
       }
+
+      gameRoom.players.forEach((player) => {
+        player.markReady();
+      });
 
       gameManager.players.forEach((player) => {
         player.bestCards = [];
         player._hand = [];
         player._blindCards = [];
         player.inGame = true;
-        player.markReady();
       });
 
       let deck = createShuffledDeck();

@@ -1,17 +1,12 @@
-import { Player } from "./player";
+import { Player, PlayingPlayer } from "./player";
 
 export class OtherPlayer {
-    /**
-     *
-     */
-    constructor(player: Player, status: string) {
+    constructor(player: PlayingPlayer) {
         this.playerId = player.playerId;
         this.name = player.name;
         this.cardsHeld = player.hand.length;
         this.bestCards = player.bestCards.length;
         this.blindCards = player.blindCards;      
-        this.isReady = player.ready; 
-        this.status = status;
         this.isNominated = player.nominated;
         this.isNominating = player.nominating;
     }
@@ -22,7 +17,6 @@ export class OtherPlayer {
     bestCards: number;
     blindCards: number;
     isReady: boolean;
-    status: string;
     isNominated: boolean = false;
     isNominating: boolean = false;
 }

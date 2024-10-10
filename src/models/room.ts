@@ -2,13 +2,13 @@ import {
   GameManager
 } from "../services/gameManager/gameManager";
 import { ChatMessage } from "./chatMessage";
-import { Player } from "./player";
+import { Player, RoomPlayer } from "./player";
 
 export class Room {
   gameManager: GameManager;
   roomName: string;
   messages: ChatMessage[] = [];
-  players: Map<string, Player>;
+  players: Map<string, RoomPlayer>;
   /**
    *
    */
@@ -18,7 +18,7 @@ export class Room {
     this.players = new Map();
   }
 
-  addPlayer(player: Player) {
+  addPlayer(player: RoomPlayer) {
     this.players.set(player.playerId, player);
   }
 
@@ -38,7 +38,29 @@ export class Room {
     });
   }
 
-  getRoomState(myId: string): RoomState {
+  markDisconnected(playerId: string) {
+    let player = this.players.get(playerId);
+
+    if (!player) {
+      return;
+    }
+
+    player.connected = false;
+    this.gameManager.addHistory(`${player.name} has disconnected.`);
+  }
+
+  markPlayerReady(playerId: string, isReady: boolean) {
+    let player = this.players.get(playerId);
+
+    if (!player) {
+      return;
+    }
+
+    player.ready = isReady;
+    this.gameManager.addHistory(`${player.name} is ${isReady ? "ready" : "not ready"}.`);
+  }
+
+  getRoomState(myId?: string): RoomState {
     return {
       myId,
       messages: this.messages,
@@ -52,5 +74,5 @@ export class RoomState {
   myId: string;
   roomName: string;
   messages: ChatMessage[] = [];
-  players: Player[] = [];
+  players: RoomPlayer[] = [];
 }

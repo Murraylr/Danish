@@ -6,7 +6,9 @@ import { Room, RoomState } from "../../models/room";
 
 const caseReducers: any = {
   roomUpdated: (state: RoomState, action: PayloadAction<RoomState>) => {
-    state = action.payload;
+    state = !!action.payload?.myId
+      ? action.payload
+      : { ...action.payload, myId: state?.myId };
     return state;
   },
 };

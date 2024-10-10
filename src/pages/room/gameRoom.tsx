@@ -164,6 +164,15 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
   }, []);
 
   useEffect(() => {
+    socket.on(
+      SocketEvents.GameStarted,
+      () => {
+        setStartGameModalOpen(false);
+      }
+    );
+  }, []);
+
+  useEffect(() => {
     if (!winners || winners.winnerIds.length === 0) {
       return;
     }
@@ -228,7 +237,7 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
               justify="space-between"
               style={{ height: "100%" }}
             >
-              {gameState && playerState && (
+              {gameState?.gameStarted && playerState?.hand && (
                 <>
                   <Flex style={section} justify="space-evenly" flex={1}>
                     {playerState.otherPlayers.map((player, index) => (

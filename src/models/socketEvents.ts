@@ -8,6 +8,7 @@ export enum SocketEvents {
     MarkReady = "markReady",
     playerReady = "playerReady",
     StartGame = "startGame",
+    GameStarted = "gameStarted",
 
     SendMessage = "sendMessage",
     MessageSent = "messageSent",
