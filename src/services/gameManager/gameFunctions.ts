@@ -17,7 +17,7 @@ import {
   Three,
   Two,
 } from "../../models/card";
-import { Player } from "../../models/player";
+import { Player, PlayingPlayer } from "../../models/player";
 
 export function IsFourSameCards(cardsToPlay: Card[], discardPile: Card[]) {
   let deckAfterPlay = [...discardPile, ...cardsToPlay];
@@ -123,7 +123,7 @@ function shuffleDeck(deck: Card[]) {
 }
 
 export function canPlayCard(
-  player: Player,
+  player: PlayingPlayer,
   cards: Card[],
   discardPile: Card[],
   onFailCallback: (message: string) => void

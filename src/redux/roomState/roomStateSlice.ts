@@ -9,8 +9,10 @@ import { State } from "../state";
 import { Room } from "../../models/room";
 
 const caseReducers: any = {
-  joinRoom: (state: Room, action: PayloadAction<Room>) => {
-    state = action.payload;
+  roomUpdated: (state: RoomState, action: PayloadAction<RoomState>) => {
+    state = !!action.payload?.myId
+      ? action.payload
+      : { ...action.payload, myId: state?.myId };
     return state;
   },
 };

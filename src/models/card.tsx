@@ -411,7 +411,7 @@ export class Ten extends Card {
       return true;
     }
 
-    if (topCard.card === CardNumber.Seven || topCard.card === CardNumber.Ten) {
+    if (topCard.card === CardNumber.Seven || topCard.card === CardNumber.Nine) {
       onFailCallback('Cannot play a 10 on a 7 or a 9. Must be lower than or equal.');
       return false;
     }

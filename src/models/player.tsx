@@ -1,30 +1,51 @@
 import { memoize, MemoizedFunction } from "lodash";
 import { Card, CardType, newCard } from "./card";
 
-export type VisiblePlayer = Omit<Player, "_blindCards" | "hand" | "getHand"> & {
+export type VisiblePlayer = Omit<PlayingPlayer & RoomPlayer, "_blindCards" | "hand" | "getHand"> & {
   blindCards: number;
 };
 
-export class Player {
+export abstract class Player {
   playerId: string;
-  _hand: readonly CardType[];
   name: string;
+  inGame = false;
+
+  constructor(playerId: string, name: string) {
+    this.playerId = playerId;
+    this.name = name;
+  }
+}
+
+export class RoomPlayer extends Player {
   ready: boolean = false;
   connected: boolean = true;
+
+  /**
+   *
+   */
+  constructor(playerId: string, name: string) {
+    super(playerId, name);
+    this.connected = true;
+  }
+
+  markReady() {
+    this.ready = true;
+  }
+}
+
+export class PlayingPlayer extends Player {
+  _hand: readonly CardType[];
   _blindCards: CardType[] = [];
   bestCards: CardType[] = [];
   nominating = false;
   nominated = false;
-  inGame = false;
   finished = false;
   private getHand: ((hand: readonly CardType[]) => Card[]) & MemoizedFunction;
 
   constructor(playerId: string, name: string) {
-    this.playerId = playerId;
-    this._hand = [];
-    this.name = name;
-    this.connected = true;
+    super(playerId, name);
     this._blindCards = [];
+    this._hand = [];
 
     this.getHand = memoize((hand: CardType[]) =>
       hand.map((card) => newCard(card))
@@ -47,12 +68,8 @@ export class Player {
     this._hand = [...this._hand, card];
   }
 
-  nominatePlayer(): Player {
+  nominatePlayer(): PlayingPlayer {
     return this;
-  }
-
-  markReady() {
-    this.ready = true;
   }
 
   removeCardFromHand(card: Card) {

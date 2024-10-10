@@ -21,7 +21,7 @@ import {
 } from "../../models/card";
 import { GameState } from "../../models/gameState";
 import { OtherPlayer } from "../../models/otherPlayer";
-import { Player, VisiblePlayer } from "../../models/player";
+import { Player, PlayingPlayer, RoomPlayer, VisiblePlayer } from "../../models/player";
 import { PlayerState } from "../../models/playerUpdate";
 import { PlayerWonModel } from "../../models/playerWonModel";
 import { omitProperty, proxiedPropertiesOf } from "../typeUtils";
@@ -51,7 +51,7 @@ enum PostPlayAction {
 export class GameManager {
   deck: Card[];
 
-  players: Map<string, Player>;
+  players: Map<string, PlayingPlayer>;
   currentPlayerIndex: number;
   gameStarted: boolean = false;
   choosingBestCards: boolean = false;
@@ -143,7 +143,7 @@ export class GameManager {
     }
   }
 
-  addPlayer(player: Player) {
+  addPlayer(player: PlayingPlayer) {
     if (this.players.size >= 6) {
       return;
     }
@@ -152,48 +152,9 @@ export class GameManager {
     this.addHistory(`${player.name} has joined the game.`);
   }
 
-  markPlayerReady(playerId: string, isReady: boolean) {
-    let player = this.players.get(playerId);
-
-    if (!player) {
-      return;
-    }
-
-    player.ready = isReady;
-    this.addHistory(`${player.name} is ${isReady ? "ready" : "not ready"}.`);
-  }
-
   removePlayer(playerId: string) {
     this.players.delete(playerId);
     this.addHistory(`Player has left the game.`);
-  }
-
-  getPlayerStatus(playerId: string) {
-    let player = this.players.get(playerId);
-    if (!player) {
-      return "Left Room";
-    }
-
-    if (!player.connected) {
-      return "Disconnected";
-    }
-
-    if (this.gameStarted) {
-      return "Online";
-    }
-
-    return player.ready ? "Ready" : "Not Ready";
-  }
-
-  markDisconnected(playerId: string) {
-    let player = this.players.get(playerId);
-
-    if (!player) {
-      return;
-    }
-
-    player.connected = false;
-    this.addHistory(`${player.name} has disconnected.`);
   }
 
   getCurrentPlayer(): OtherPlayer[] {
@@ -201,7 +162,7 @@ export class GameManager {
       return this.startingPlayers
         .map((p) => this.players.get(p))
         .filter((p) => p !== null)
-        .map((p) => new OtherPlayer(p!, this.getPlayerStatus(p!.playerId)));
+        .map((p) => new OtherPlayer(p!));
     }
 
     let player =
@@ -211,7 +172,7 @@ export class GameManager {
 
     return !player
       ? []
-      : [new OtherPlayer(player, this.getPlayerStatus(player.playerId))];
+      : [new OtherPlayer(player)];
   }
 
   isPlayersTurn(playerId: string) {
@@ -235,7 +196,7 @@ export class GameManager {
   }
 
   canPlay(
-    player: Player,
+    player: PlayingPlayer,
     cards: Card[],
     onFailCallback?: (errorMessage: string) => void
   ): boolean {
@@ -270,7 +231,7 @@ export class GameManager {
   }
 
   playCards(
-    player: Player,
+    player: PlayingPlayer,
     cardsInput: CardType[],
     onFailCallback?: (error: string) => void
   ): void {
@@ -344,7 +305,7 @@ export class GameManager {
     }
   }
 
-  private DrawCards(player: Player) {
+  private DrawCards(player: PlayingPlayer) {
     while (this.deck.length > 0 && player.hand.length < 3) {
       this.drawCard(player);
     }
@@ -373,7 +334,7 @@ export class GameManager {
     return CardEvent.Next;
   }
 
-  hasPlayerWon(player: Player): PlayerWonModel | null {
+  hasPlayerWon(player: PlayingPlayer): PlayerWonModel | null {
     if (!player.inGame) {
       return null;
     }
@@ -384,7 +345,7 @@ export class GameManager {
       player.bestCards.length === 0
     ) {
       player.inGame = false;
-      this.winners.push(new OtherPlayer(player, "Winner"));
+      this.winners.push(new OtherPlayer(player));
 
       this.addHistory(
         `${player.name} has finished! Position: ${this.winners.length}`
@@ -402,7 +363,7 @@ export class GameManager {
     return null;
   }
 
-  private handlePostPlayAction(player: Player, postPlayAction: PostPlayAction) {
+  private handlePostPlayAction(player: PlayingPlayer, postPlayAction: PostPlayAction) {
     switch (postPlayAction) {
       case PostPlayAction.PickUpBestCards:
         player._hand = [...player.bestCards];
@@ -416,7 +377,7 @@ export class GameManager {
     }
   }
 
-  private getPostPlayAction(player: Player) {
+  private getPostPlayAction(player: PlayingPlayer) {
     if (this.deck.length > 0 || player.hand.length > 0) {
       return PostPlayAction.None;
     }
@@ -432,7 +393,7 @@ export class GameManager {
     return PostPlayAction.Win;
   }
 
-  handleNomination(player: Player, nominatedPlayerId: string) {
+  handleNomination(player: PlayingPlayer, nominatedPlayerId: string) {
     let nominatedPlayer = this.players.get(nominatedPlayerId);
 
     if (!nominatedPlayer) {
@@ -446,7 +407,7 @@ export class GameManager {
     );
   }
 
-  private handleCardEvent(player: Player, card: CardEvent) {
+  private handleCardEvent(player: PlayingPlayer, card: CardEvent) {
     switch (card) {
       case CardEvent.Nominate:
         player.nominating = true;
@@ -461,7 +422,7 @@ export class GameManager {
     }
   }
 
-  nominatingPlayer(): Player | null {
+  nominatingPlayer(): PlayingPlayer | null {
     let players = this.playerArray();
     let player = players[this.currentPlayerIndex];
     if (player.nominating) {
@@ -494,7 +455,7 @@ export class GameManager {
     }
   }
 
-  drawCard(player: Player) {
+  drawCard(player: PlayingPlayer) {
     if (this.deck.length === 0) {
       return;
     }
@@ -544,7 +505,7 @@ export class GameManager {
     }
   }
 
-  pickUpPile(player: Player) {
+  pickUpPile(player: PlayingPlayer) {
     player._hand = player._hand.concat(
       this.discardPile.map((c) =>
         c.card === CardNumber.One ? { card: CardNumber.Ace, suit: c.suit } : c
@@ -564,7 +525,7 @@ export class GameManager {
       history: this.history,
       pickupDeckNumber: this.deck.length,
       players: this.playerArray().map(
-        (p) => new OtherPlayer(p, this.getPlayerStatus(p.playerId))
+        (p) => new OtherPlayer(p)
       ),
       startingPlayers: this.startingPlayers,
       winners: this.winners,
@@ -574,11 +535,11 @@ export class GameManager {
     };
   }
 
-  getPlayerState(player: Player): PlayerState {
+  getPlayerState(player: PlayingPlayer & RoomPlayer): PlayerState {
     let blindCards = player.blindCards;
     let mePlayer = omitProperty(
       player,
-      proxiedPropertiesOf<Player>()._blindCards
+      proxiedPropertiesOf<PlayingPlayer & RoomPlayer>()._blindCards
     );
     let me: VisiblePlayer = {
       ...mePlayer,
@@ -592,7 +553,7 @@ export class GameManager {
       isNominated: me.nominated,
       otherPlayers: this.playerArray()
         .filter((p) => p !== player)
-        .map((p) => new OtherPlayer(p, this.getPlayerStatus(p.playerId))),
+        .map((p) => new OtherPlayer(p)),
       me,
     };
   }

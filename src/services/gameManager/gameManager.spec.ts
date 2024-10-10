@@ -17,7 +17,7 @@ import {
   Three,
   Two,
 } from "../../models/card";
-import { Player } from "../../models/player";
+import { Player, PlayingPlayer } from "../../models/player";
 import { GameManager } from "./gameManager";
 
 describe.skip("GameManager", () => {
@@ -27,9 +27,9 @@ describe.skip("GameManager", () => {
     gameManager = new GameManager();
 
     gameManager.players = new Map();
-    gameManager.players.set("1", new Player("1", "Player 1"));
-    gameManager.players.set("2", new Player("2", "Player 2"));
-    gameManager.players.set("3", new Player("3", "Player 3"));
+    gameManager.players.set("1", new PlayingPlayer("1", "Player 1"));
+    gameManager.players.set("2", new PlayingPlayer("2", "Player 2"));
+    gameManager.players.set("3", new PlayingPlayer("3", "Player 3"));
     gameManager.currentPlayerIndex = 1;
   });
 
@@ -39,15 +39,15 @@ describe.skip("GameManager", () => {
       gameManager.startGame();
       expect(gameManager.gameStarted).toBe(false);
 
-      gameManager.players.set("1", new Player("1", "Player 1"));
+      gameManager.players.set("1", new PlayingPlayer("1", "Player 1"));
       gameManager.startGame();
       expect(gameManager.gameStarted).toBe(false);
     });
 
     it("should start a game and deal the cards", () => {
       gameManager.players = new Map();
-      gameManager.players.set("1", new Player("1", "Player 1"));
-      gameManager.players.set("2", new Player("2", "Player 2"));
+      gameManager.players.set("1", new PlayingPlayer("1", "Player 1"));
+      gameManager.players.set("2", new PlayingPlayer("2", "Player 2"));
       gameManager.startGame();
       expect(gameManager.gameStarted).toBe(true);
       expect(gameManager.choosingBestCards).toBe(true);
@@ -60,10 +60,10 @@ describe.skip("GameManager", () => {
 
     it("should start a game with two decks if more than 3 players", () => {
       gameManager.players = new Map();
-      gameManager.players.set("1", new Player("1", "Player 1"));
-      gameManager.players.set("2", new Player("2", "Player 2"));
-      gameManager.players.set("3", new Player("3", "Player 3"));
-      gameManager.players.set("4", new Player("4", "Player 4"));
+      gameManager.players.set("1", new PlayingPlayer("1", "Player 1"));
+      gameManager.players.set("2", new PlayingPlayer("2", "Player 2"));
+      gameManager.players.set("3", new PlayingPlayer("3", "Player 3"));
+      gameManager.players.set("4", new PlayingPlayer("4", "Player 4"));
       gameManager.startGame();
       expect(gameManager.gameStarted).toBe(true);
       expect(gameManager.choosingBestCards).toBe(true);
