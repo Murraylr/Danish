@@ -15,10 +15,8 @@ export class Room {
   constructor(roomName: string) {
     this.gameManager = new GameManager();
     this.roomName = roomName;
-    this.players = new Map();
   }
 
-  addPlayer(player: RoomPlayer) {
     this.players.set(player.playerId, player);
   }
 
@@ -37,7 +35,6 @@ export class Room {
       roomName: this.roomName,
     });
   }
-
   markDisconnected(playerId: string) {
     let player = this.players.get(playerId);
 
