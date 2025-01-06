@@ -107,6 +107,9 @@ io.on("connection", (socket: Socket) => {
   socket.on(SocketEvents.SelectNomination, connection.selectNomination);
   socket.on(SocketEvents.PickUp, connection.pickUp);
   socket.on(SocketEvents.RestartGame, connection.restartGame);
+  socket.on(SocketEvents.JoinTestRoom, connection.joinTestRoom);
+  socket.on(SocketEvents.loadTestGameFromHistory, connection.loadTestGameFromHistory);
+  socket.on(SocketEvents.playNextHistoryMove, connection.playNextHistoryMove);
 
   if (process.env.ENVIRONMENT === "dev") {
     socket.on(SocketEvents.SetTest, connection.setTest);

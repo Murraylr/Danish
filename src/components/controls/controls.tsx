@@ -15,7 +15,7 @@ import useGameStateService from "../../hooks/useGameStateService/useGameStateSer
 interface ControlProps {
   selectedCards: CardType[];
   bestCards: CardType[];
-  onConfirm: () => void;
+  onConfirm: (cards: CardType[]) => void;
 }
 
 const Controls: React.FC<ControlProps> = ({
@@ -29,13 +29,7 @@ const Controls: React.FC<ControlProps> = ({
   const gameStateService = useGameStateService();
 
   const playTurn = useCallback(() => {
-    let turn: Turn = {
-      cards: selectedCards,
-      playerId: playerState.me.playerId,
-      room: room,
-    };
-    socket.emit(SocketEvents.PlayCard, turn);
-    onConfirm();
+    onConfirm(selectedCards);
   }, [playerState?.me?.playerId, room, selectedCards]);
 
   const selectBestCards = useCallback(() => {
@@ -51,7 +45,7 @@ const Controls: React.FC<ControlProps> = ({
 
     socket.emit(SocketEvents.SelectBestCard, cardSelect);
 
-    onConfirm();
+    onConfirm(null);
   }, [playerState?.me?.playerId, room?.roomName, selectedCards]);
 
   const pickUp = useCallback(() => {
@@ -60,7 +54,7 @@ const Controls: React.FC<ControlProps> = ({
       roomName: room.roomName,
     };
     socket.emit(SocketEvents.PickUp, pickupModel);
-    onConfirm();
+    onConfirm(null);
   }, [playerState?.me?.playerId, room?.roomName]);
 
   return (

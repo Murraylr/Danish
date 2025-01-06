@@ -19,9 +19,13 @@ import useWindowDimensions from "../../hooks/useWindowDimensions/useWindowDimens
 
 interface MyCardsProps {
   cards: readonly CardType[];
+  onPlayCards: (cardSelection: CardType[]) => void;
 }
 
-const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
+const MyCards: React.FC<MyCardsProps> = ({
+  cards,
+  onPlayCards,
+}: MyCardsProps) => {
   let sortedCards = cards
     .map((c) => newCard(c))
     .sort((a: Card, b: Card) => a.getNumber() - b.getNumber());
@@ -58,31 +62,44 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
     [gameState?.cardSelectingState, sortedCards]
   );
 
+  const confirmSelection = useCallback((cards?: CardType[]) => {
+    if (cards) {
+      onPlayCards(cards);
+    }
+
+    setSelectedCardIndexes([]);
+  }, []);
+
   if (!playerState || !playerState.me) {
     return null;
   }
 
   return (
-    <Flex vertical style={{ height: "100%", width: '100%', textAlign: 'center' }}>
+    <Flex
+      vertical
+      style={{ height: "100%", width: "100%", textAlign: "center" }}
+    >
       <div>{gameFunctions.getStatusMessage(playerState.me)}</div>
       <Flex vertical justify="center" align="center" style={container}>
         <Controls
           bestCards={playerState.me.bestCards}
           selectedCards={selectedCardIndexes.map((index) => sortedCards[index])}
-          onConfirm={() => setSelectedCardIndexes([])}
+          onConfirm={confirmSelection}
         />
         <Flex style={deckStyle} flex={2} vertical>
           {sortedCards.map((card, index) => {
             let isSelected = selectedCardIndexes.includes(index);
             let style: React.CSSProperties = {
               ...cardStyle,
-              left: `calc(50% + ${((index) - ((sortedCards.length + 1) / 2 + (height / 400))) * 1.5}em)`,
+              left: `calc(50% + ${
+                (index - ((sortedCards.length + 1) / 2 + height / 400)) * 1.5
+              }em)`,
               zIndex: index,
               top: isSelected ? "10px" : "20px",
             };
 
             return (
-              <div style={style} key={index} onClick={(e) => selectCard(index)} >
+              <div style={style} key={index} onClick={(e) => selectCard(index)}>
                 <FaceUpCard card={card}></FaceUpCard>
               </div>
             );
@@ -101,14 +118,13 @@ const MyCards: React.FC<MyCardsProps> = ({ cards }: MyCardsProps) => {
 
 const container: React.CSSProperties = {
   height: "100%",
-
 };
 
 const deckStyle: React.CSSProperties = {
   position: "relative",
   height: "100%",
   width: "100%",
-  marginBottom: '2em'
+  marginBottom: "2em",
 };
 
 const blindCardsContainer: React.CSSProperties = {

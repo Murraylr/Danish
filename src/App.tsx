@@ -7,6 +7,7 @@ import GameRoom from "./pages/room/gameRoom";
 import { Provider } from "react-redux";
 import store from "./redux/reduxStore";
 import { ConfigProvider } from "antd";
+import TestRoom from "./pages/testRoom/testRoom";
 
 const router = createBrowserRouter([
   {
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
   {
     path: "/room/:roomName",
     element: <GameRoom />,
+  },
+  {
+    path: "/test",
+    element: <TestRoom />,
   },
 ]);
 

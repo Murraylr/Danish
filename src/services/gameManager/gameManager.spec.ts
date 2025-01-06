@@ -17,8 +17,28 @@ import {
   Three,
   Two,
 } from "../../models/card";
+<<<<<<< Updated upstream
 import { Player, PlayingPlayer } from "../../models/player";
 import { GameManager } from "./gameManager";
+=======
+import { PlayingPlayer } from "../../models/player";
+import { GameManager, TestPlayer } from "./gameManager";
+import ruleSet from "./gameRules";
+import assert, { fail } from "assert";
+import fs from "fs";
+
+export interface FullGameState {
+  pickupDeckNumber: number;
+  playerNumber: number;
+  currentPlayerIndex: number;
+  cardSelectingState: boolean;
+  startingPlayers: number[];
+  winners: number[];
+  discardPile: number[];
+  players: TestPlayer[];
+  deck: number[];
+}
+>>>>>>> Stashed changes
 
 describe.skip("GameManager", () => {
   let gameManager: GameManager;
@@ -712,7 +732,120 @@ describe.skip("GameManager", () => {
         gameManager.bottomDiscardPile = [new Three(Suit.Clubs)];
         gameManager.currentPlayerIndex = 2;
 
+<<<<<<< Updated upstream
         expect(gameManager.getPlayerIndexToPlay(CardEvent.Next)).toBe(0);
     })
   })
 });
+=======
+      gameManager.currentPlayerIndex = 2;
+      expect(gameManager.getPlayerIndexToPlay(CardEvent.Back)).toBe(1);
+
+      gameManager.currentPlayerIndex = 0;
+      expect(gameManager.getPlayerIndexToPlay(CardEvent.Back)).toBe(2);
+    });
+
+    it("should return same index on Nominate", () => {
+      gameManager.bottomDiscardPile = [
+        new Ace(Suit.Clubs),
+        new Eight(Suit.Clubs),
+        new Ace(Suit.Diamonds),
+        new Eight(Suit.Diamonds),
+      ];
+
+      expect(gameManager.getPlayerIndexToPlay(CardEvent.Nominate)).toBe(1);
+    });
+
+    it("should return same index when discarding pile", () => {
+      gameManager.bottomDiscardPile = [new Three(Suit.Clubs)];
+
+      expect(gameManager.getPlayerIndexToPlay(CardEvent.DiscardPile)).toBe(1);
+    });
+
+    it("should start from beginning player when round finished", () => {
+      gameManager.bottomDiscardPile = [new Three(Suit.Clubs)];
+      gameManager.currentPlayerIndex = 2;
+
+      expect(gameManager.getPlayerIndexToPlay(CardEvent.Next)).toBe(0);
+    });
+  });
+
+  describe("Simulate game", () => {
+    fit("should simulate a game", (done) => {
+      ruleSet
+        .testGame(simulateGame, 1000)
+        .then(() => {
+          done();
+        })
+        .catch((error) => {
+          let history = error.fullGameHistory;
+          delete history.gameManager;
+          fs.writeFileSync("gameHistory.json", JSON.stringify(history, null, 2));
+          assert.fail(error);
+        });
+    }, 120000);
+  });
+});
+
+function simulateGame() {
+  let gameManager = new GameManager();
+
+  gameManager.addPlayer(new PlayingPlayer("1", "Player 1"));
+  gameManager.addPlayer(new PlayingPlayer("2", "Player 2"));
+  gameManager.addPlayer(new PlayingPlayer("3", "Player 3"));
+
+  gameManager.startGame();
+
+  for (let player of gameManager.players.values()) {
+    // select 3 random cards from hand
+    let bestCards = player.hand.slice(0, 3);
+    gameManager.selectBestCards(player.playerId, bestCards);
+  }
+
+  gameManager.currentPlayerIndex = gameManager
+    .playerArray()
+    .findIndex((p) => p.playerId === gameManager.startingPlayers[0]);
+
+  while (gameManager.winners.length === 0) {
+    let player = gameManager.playerArray()[gameManager.currentPlayerIndex];
+
+    if (player.nominating) {
+      // nominate random player
+      let nominatedPlayer =
+        gameManager.playerArray()[
+          Math.floor(Math.random() * gameManager.playerArray().length)
+        ];
+      gameManager.handleNomination(player, nominatedPlayer.playerId);
+      continue;
+    }
+
+    let cardsCanPlay = player?.hand.filter((c) =>
+      gameManager.canPlay(player!, [c], () => {})
+    );
+
+    if (cardsCanPlay.length === 0) {
+      gameManager.pickUpPile(player!);
+      continue;
+    }
+
+    let uniqueCards = uniqBy(player?.hand, (c) => c.card);
+
+    // select random unique card
+    let card = uniqueCards[Math.floor(Math.random() * uniqueCards.length)];
+    // select random amount of how many of that card exists in unique cards
+    let amount =
+      Math.floor(
+        Math.random() * player?.hand.filter((c) => c.card === card.card).length
+      ) + 1;
+
+    // play those cards from the canPlay hand
+    gameManager.playCards(
+      player!,
+      uniqueCards.filter((c) => c.card === card.card).slice(0, amount),
+      () => {}
+    );
+  }
+
+  return gameManager.gameHistory;
+}
+>>>>>>> Stashed changes

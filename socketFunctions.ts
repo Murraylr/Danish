@@ -14,8 +14,12 @@ import { TestParameters } from "./src/models/testParameters";
 import { CannotPlayCard } from "./src/models/cannotPlayCardModel";
 import { createShuffledDeck } from "./src/services/gameManager/gameFunctions";
 import { OtherPlayer } from "./src/models/otherPlayer";
+import { GameHistory } from "./src/services/gameHistory/gameHistory";
+import { TestGameManager } from "./src/services/gameManager/testGameManager";
+import { GameHistoryLoader } from "./src/models/gameHistoryLoader";
 
 const roomManager = new RoomManager();
+const testRoomName = "TestRoom-63664857823";
 
 export function InitialiseConnection(
   socket: Socket,
@@ -29,10 +33,7 @@ export function InitialiseConnection(
       SocketEvents.GameUpdate,
       room?.gameManager.getGameState()
     );
-    io.to(roomName).emit(
-      SocketEvents.RoomUpdated,
-      room?.getRoomState()
-    );
+    io.to(roomName).emit(SocketEvents.RoomUpdated, room?.getRoomState());
     for (let [id, player] of room!.players) {
       let roomPlayer = room?.gameManager.players.get(id);
       io.to(`${roomName}/${id}`).emit(
@@ -58,7 +59,9 @@ export function InitialiseConnection(
   function startGame(roomName: string) {
     let gameRoom = roomManager.getRoom(roomName);
     for (let [_, player] of gameRoom!.players) {
-      gameRoom.gameManager.addPlayer(new PlayingPlayer(player.playerId, player.name));
+      gameRoom.gameManager.addPlayer(
+        new PlayingPlayer(player.playerId, player.name)
+      );
     }
 
     socket.to(roomName).emit(SocketEvents.GameStarted);
@@ -97,10 +100,19 @@ export function InitialiseConnection(
       socket.join(roomModel.roomName);
       socket.join(`${roomModel.roomName}/${playerId}`);
       updateClient(roomModel.roomName);
+<<<<<<< Updated upstream
       io.to(`${room.roomName}/${playerId}`).emit(
         SocketEvents.RoomJoined,
         roomModel
       );
+=======
+      for (let [pId, p] of room.players) {
+        io.to(`${roomModel.roomName}/${pId}`).emit(
+          SocketEvents.RoomUpdated,
+          room.getRoomState(pId)
+        );
+      }
+>>>>>>> Stashed changes
       room.addSystemMessage(`${roomModel.playerName} has joined the room`);
       io.to(room.roomName).emit(SocketEvents.MessageSent, room.messages);
 
@@ -117,10 +129,7 @@ export function InitialiseConnection(
         return;
       }
 
-      gameRoom.markPlayerReady(
-        playerReady.playerId,
-        playerReady.ready
-      );
+      gameRoom.markPlayerReady(playerReady.playerId, playerReady.ready);
 
       let player = gameRoom?.players.get(playerReady.playerId);
       gameRoom.addSystemMessage(
@@ -164,6 +173,7 @@ export function InitialiseConnection(
         return;
       }
 
+<<<<<<< Updated upstream
       gameRoom?.gameManager.playCards(player, turn.cards, (error) => {
         let cannotPlayCard: CannotPlayCard = {
           message: error,
@@ -172,6 +182,21 @@ export function InitialiseConnection(
           .to(`${turn.room.roomName}/${playerId}`)
           .emit(SocketEvents.CannotPlayCard, cannotPlayCard);
       });
+=======
+      let hasWon = gameRoom?.gameManager.playCards(
+        player,
+        turn.cards,
+        (error) => {
+          let cannotPlayCard: CannotPlayCard = {
+            message: error,
+          };
+          io.to(`${turn.room.roomName}/${playerId}`).emit(
+            SocketEvents.CannotPlayCard,
+            cannotPlayCard
+          );
+        }
+      );
+>>>>>>> Stashed changes
 
       let winner = gameRoom?.gameManager.hasPlayerWon(player);
       if (winner) {
@@ -216,7 +241,9 @@ export function InitialiseConnection(
       );
       io.to(`${getMeModel.roomName}/${getMeModel.playerId}`).emit(
         SocketEvents.PlayerUpdate,
-        gameRoom?.gameManager.getPlayerState(Object.assign({}, roomPlayer, gamePlayer))
+        gameRoom?.gameManager.getPlayerState(
+          Object.assign({}, roomPlayer, gamePlayer)
+        )
       );
     },
 
@@ -303,6 +330,82 @@ export function InitialiseConnection(
       gameManager.gameStarted = true;
 
       updateClient(testParams.roomName);
+    },
+
+    joinTestRoom: function () {
+      let room = roomManager.getRoom(testRoomName);
+      if (!room) {
+        room = roomManager.createRoom(testRoomName);
+      }
+      let player: RoomPlayer;
+
+      if (room.players.has(playerId)) {
+        player = room.players.get(playerId)!;
+        player.connected = true;
+      } else {
+        player = new RoomPlayer(playerId, `Player ${room.players.size}`);
+        room.addPlayer(player);
+      }
+
+      socket.join(testRoomName);
+      io.to(testRoomName).emit(
+        SocketEvents.GameUpdate,
+        room?.gameManager.getGameState()
+      );
+      io.to(testRoomName).emit(SocketEvents.RoomUpdated, room?.getRoomState());
+    },
+
+    loadTestGameFromHistory: function (gameHistory: GameHistoryLoader) {
+      let gameRoom = roomManager.getRoom(testRoomName);
+      let gm = new TestGameManager();
+      gm.setupTestGame(gameHistory, false);
+      gameRoom.gameManager = gm;
+      for (let [_, player] of gm.players) {
+        socket.join(`${testRoomName}/${player.playerId}`);
+      }
+      io.to(testRoomName).emit(
+        SocketEvents.GameUpdate,
+        gameRoom?.gameManager.getGameState()
+      );
+      io.to(testRoomName).emit(
+        SocketEvents.RoomUpdated,
+        gameRoom?.getRoomState()
+      );
+      let playingPlayer = gm.playerArray()[gm.currentPlayerIndex];
+      let player = Object.assign(
+        {},
+        playingPlayer,
+        gameRoom.players.get(playingPlayer.playerId)
+      );
+
+      io.to(`${testRoomName}/${player.playerId}`).emit(
+        SocketEvents.PlayerUpdate,
+        gm.getPlayerState(player)
+      );
+    },
+    playNextHistoryMove: function () {
+      let gameRoom = roomManager.getRoom(testRoomName);
+      let gm = gameRoom.gameManager as TestGameManager;
+      gm.playNextMove();
+      io.to(testRoomName).emit(
+        SocketEvents.GameUpdate,
+        gameRoom?.gameManager.getGameState()
+      );
+      io.to(testRoomName).emit(
+        SocketEvents.RoomUpdated,
+        gameRoom?.getRoomState()
+      );
+      let playingPlayer = gm.playerArray()[gm.currentPlayerIndex];
+      let player = Object.assign(
+        {},
+        playingPlayer,
+        gameRoom.players.get(playingPlayer.playerId)
+      );
+
+      io.to(`${testRoomName}/${player.playerId}`).emit(
+        SocketEvents.PlayerUpdate,
+        gm.getPlayerState(player)
+      );
     },
   };
 }

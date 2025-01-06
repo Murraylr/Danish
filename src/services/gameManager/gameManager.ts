@@ -33,12 +33,48 @@ import {
   IsNominationCard,
   SetAceOneStatuses,
 } from "./gameFunctions";
+import { FullGameState } from "./gameManager.spec";
+import { GameHistory, PlayerStartingData } from "../gameHistory/gameHistory";
 
+<<<<<<< Updated upstream
 export interface HistoryEntry {
   playerName?: string;
   cardsAttempted?: Card[];
   successful?: boolean;
   message: string;
+=======
+export interface Move {
+  playerIndex: number;
+  cardNumber?: number;
+  cardAmount?: number;
+  action: PlayAction;
+  targetPlayerIndex?: number;
+  clearedPack?: boolean;
+}
+
+export enum PlayAction {
+  Play = "Play",
+  PickUp = "Pickup",
+  Nominate = "Nominate",
+  PickUpBestCards = "PickUpBestCards",
+  PickupBlindCards = "PickupBlindCards",
+}
+
+export interface TestPlayer {
+  hand: number[];
+  blindCards: number[];
+  bestCards: number[];
+  nominating: boolean;
+  nominated: boolean;
+}
+
+interface PlayerModel {
+  hand: number[];
+  blindCards: number[];
+  bestCards: number[];
+  nominating: boolean;
+  nominated: boolean;
+>>>>>>> Stashed changes
 }
 
 enum PostPlayAction {
@@ -58,10 +94,10 @@ export class GameManager {
   startingPlayers: string[] = [];
   firstMove = true;
   winners: OtherPlayer[] = [];
-  history: HistoryEntry[] = [];
   lastPlayerId: string | null = null;
   lastCardsPlayed: Card[] = [];
   bottomDiscardPile: Card[] = [];
+  gameHistory: GameHistory;
   public get discardPile(): Card[] {
     return this.bottomDiscardPile.concat(this.lastCardsPlayed);
   }
@@ -266,10 +302,12 @@ export class GameManager {
     this.currentPlayerIndex = this.playerArray().findIndex(
       (p) => p.playerId === player.playerId
     );
+    let playermakingMoveIndex = this.currentPlayerIndex;
 
     cardsToPlay = SetAceOneStatuses(cardsToPlay, this.discardPile);
     let cardEvent = this.getCardEvent(cardsToPlay);
 
+<<<<<<< Updated upstream
     console.log("Card Event: ", cardEvent);
 
     let multipleCards = cardsToPlay.length > 1;
@@ -282,6 +320,8 @@ export class GameManager {
       true
     );
 
+=======
+>>>>>>> Stashed changes
     this.AddToDiscardPile(cardsToPlay, player);
 
     let postPlayAction = this.getPostPlayAction(player);
@@ -291,6 +331,23 @@ export class GameManager {
 
     this.currentPlayerIndex = this.getPlayerIndexToPlay(cardEvent);
     this.handleCardEvent(player, cardEvent);
+<<<<<<< Updated upstream
+=======
+
+    this.gameHistory.addHistory({
+      action: PlayAction.Play,
+      cardAmount: cardsToPlay.length,
+      cardNumber: cardsToPlay[0].getNumber(),
+      playerIndex: playermakingMoveIndex,
+      clearedPack: cardEvent === CardEvent.DiscardPile,
+    });
+
+    let hasWon = this.hasPlayerWon(player);
+
+    if (hasWon) {
+      this.winners.push(new OtherPlayer(player));
+    }
+>>>>>>> Stashed changes
   }
 
   private AddToDiscardPile(cardsToPlay: Card[], player: Player) {
@@ -366,11 +423,20 @@ export class GameManager {
   private handlePostPlayAction(player: PlayingPlayer, postPlayAction: PostPlayAction) {
     switch (postPlayAction) {
       case PostPlayAction.PickUpBestCards:
+        this.gameHistory.addHistory({
+          action: PlayAction.PickUpBestCards,
+          playerIndex: this.currentPlayerIndex,
+        });
+
         player._hand = [...player.bestCards];
         player.bestCards = [];
         this.addHistory("has picked up their best cards.", player.name);
         break;
       case PostPlayAction.PickUpBlindCard:
+        this.gameHistory.addHistory({
+          action: PlayAction.PickupBlindCards,
+          playerIndex: this.currentPlayerIndex,
+        });
         player._hand = [player._blindCards.pop()!];
         this.addHistory("has picked up a blind card.", player.name);
         break;
@@ -399,12 +465,21 @@ export class GameManager {
     if (!nominatedPlayer) {
       return;
     }
+    let targetPlayerIndex = this.playerArray().findIndex(
+      (p) => p.playerId === nominatedPlayerId
+    );
+
+    this.gameHistory.addHistory({
+      action: PlayAction.Nominate,
+      playerIndex: this.currentPlayerIndex,
+      targetPlayerIndex,
+    });
+
     nominatedPlayer.nominated = true;
     player.nominating = false;
     this.DrawCards(player);
-    this.currentPlayerIndex = this.playerArray().findIndex(
-      (p) => p.playerId === nominatedPlayerId
-    );
+
+    this.currentPlayerIndex = targetPlayerIndex;
   }
 
   private handleCardEvent(player: PlayingPlayer, card: CardEvent) {
@@ -453,6 +528,30 @@ export class GameManager {
     for (let card of cardsToSelect) {
       player!.bestCards.push(card!);
     }
+<<<<<<< Updated upstream
+=======
+
+    if (this.playerArray().every((player) => player.bestCards.length === 3)) {
+      this.setStartingPlayers();
+      this.gameHistory = new GameHistory(
+        {
+          deck: [...this.deck],
+          players: [
+            ...this.playerArray().map(
+              (p) =>
+                ({
+                  ...p,
+                  _blindCards: [...p._blindCards],
+                  bestCards: [...p.bestCards],
+                  _hand: [...p._hand],
+                } as PlayerStartingData)
+            ),
+          ],
+        },
+        this
+      );
+    }
+>>>>>>> Stashed changes
   }
 
   drawCard(player: PlayingPlayer) {
@@ -489,7 +588,7 @@ export class GameManager {
       return this.players.size - 1;
     }
 
-    return (this.currentPlayerIndex - 1) % this.players.size;
+    return this.currentPlayerIndex - 1;
   }
 
   getPlayerIndexToPlay(cardEvent: CardEvent): number {
@@ -506,6 +605,7 @@ export class GameManager {
   }
 
   pickUpPile(player: PlayingPlayer) {
+    let playerPlayingMove = this.currentPlayerIndex;
     player._hand = player._hand.concat(
       this.discardPile.map((c) =>
         c.card === CardNumber.One ? { card: CardNumber.Ace, suit: c.suit } : c
@@ -514,15 +614,18 @@ export class GameManager {
     this.clearDiscardPile();
     player.nominated = false;
     this.currentPlayerIndex = this.getNextPlayer();
+    this.gameHistory.addHistory({
+      action: PlayAction.PickUp,
+      playerIndex: playerPlayingMove,
+      clearedPack: true,
+    });
   }
 
   getGameState(): GameState {
-    console.log("Game state: ", this);
     return {
       currentPlayer: this.getCurrentPlayer(),
       cardSelectingState: this.choosingBestCards,
       gameStarted: this.gameStarted,
-      history: this.history,
       pickupDeckNumber: this.deck.length,
       players: this.playerArray().map(
         (p) => new OtherPlayer(p)
@@ -557,6 +660,7 @@ export class GameManager {
       me,
     };
   }
+<<<<<<< Updated upstream
 
   addHistory(
     message: string,
@@ -566,4 +670,6 @@ export class GameManager {
   ) {
     this.history.push({ message, playerName, cardsAttempted, successful });
   }
+=======
+>>>>>>> Stashed changes
 }

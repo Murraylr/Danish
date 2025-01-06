@@ -136,13 +136,11 @@ export class Card {
           onFailCallback("You have been nominated to play a magic card.");
         return false;
       }
-      console.log("Player is nominated, playing ", this.card);
       return this.isMagicCard;
     }
 
     if (topCard.card === CardNumber.Seven || topCard.card === CardNumber.Nine) {
       let canPlay = this.getNumber() <= topCard.getNumber();
-      console.log("Top card is power card, playing ", this.card);
       if (!canPlay && onFailCallback) {
         onFailCallback(
           `Cannot play a ${this.getName()} on a ${topCard.getName()}. You must play lower or equal.`
@@ -151,7 +149,6 @@ export class Card {
       return canPlay;
     }
 
-    console.log("Playing ", this.card, " on top card: ", topCard.card);
     let canPlay = this.getNumber() >= topCard.getNumber();
     if (!canPlay && onFailCallback) {
       onFailCallback(

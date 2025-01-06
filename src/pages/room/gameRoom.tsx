@@ -2,7 +2,6 @@
 import React, {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -13,7 +12,6 @@ import ChatBox from "../../components/chatBox/chatBox";
 import { selectGameState } from "../../redux/gameState/gameStateSlice";
 import { selectRoomModel } from "../../redux/combineSelectors";
 import {
-  selectInvalidAction,
   selectPlayerState,
 } from "../../redux/playerState/playerStateSlice";
 import { selectMessages } from "../../redux/messagesState/messagesStateSlice";
@@ -21,38 +19,35 @@ import {
   Button,
   Flex,
   Form,
-  FormProps,
   Input,
   Layout,
-  Menu,
   Modal,
   notification,
-  Space,
 } from "antd";
 import MyCards from "../../components/myCards/myCards";
-import DiscardPile from "../../components/discardPile/discardPile";
 import OpponentDeck from "../../components/opponentDeck/opponentDeck";
-import { Card } from "antd";
 import { GameState } from "../../models/gameState";
-import { GetMeModel, PlayerState } from "../../models/playerUpdate";
-import { Room } from "../../models/room";
+import { PlayerState } from "../../models/playerUpdate";
 import { JoinRoomModel } from "../../models/joinRoomModel";
 import { ChatMessage } from "../../models/chatMessage";
-import { set } from "lodash";
-import Deck from "../../components/deck/deck";
-import { TestParameters } from "../../models/testParameters";
 import DeveloperForm from "../../components/developerForm/developerForm";
 import {
   selectWinners,
   winnerStateActions,
 } from "../../redux/winnerStateSlice/winnerStateSlice";
 import { CannotPlayCard } from "../../models/cannotPlayCardModel";
-import HistoryTab from "../../components/historyTab/historyTab";
 import PlayArea from "../../components/playArea/playArea";
 import { useDispatch } from "react-redux";
 import MyHeader from "../../components/header/header";
+<<<<<<< Updated upstream
+=======
+import StartGameForm from "../../components/startGameForm/startGameForm";
+import { selectRoom } from "../../redux/roomState/roomStateSlice";
+import { CardType } from "../../models/card";
+import { Turn } from "../../models/turn";
+>>>>>>> Stashed changes
 
-const { Header, Sider, Content } = Layout;
+const { Sider, Content } = Layout;
 
 interface GameRoomProps {}
 
@@ -221,6 +216,27 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
     joinroom(roomModel);
   }, [roomModel, hasJoinedRoom]);
 
+<<<<<<< Updated upstream
+=======
+  useEffect(() => {
+    socket.on(
+      SocketEvents.GameStarted,
+      () => {
+        setStartGameModalOpen(false);
+      }
+    );
+  }, []);
+
+  const onPlayCards = useCallback((selectedCards: CardType[]) => {
+    let turn: Turn = {
+      cards: selectedCards,
+      playerId: playerState.me.playerId,
+      room: room,
+    };
+    socket.emit(SocketEvents.PlayCard, turn);
+  }, []);
+
+>>>>>>> Stashed changes
   if (!roomModel?.roomName) {
     navigate("/");
   }
@@ -255,6 +271,7 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
                     <PlayArea style={{}} />
                   </Flex>
                   <Flex justify="center" style={section} flex={2}>
+<<<<<<< Updated upstream
                     {!gameState.gameStarted && (
                       <Button
                         onClick={() =>
@@ -269,6 +286,9 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
                       </Button>
                     )}
                     <MyCards cards={playerState.hand} />
+=======
+                    <MyCards onPlayCards={onPlayCards} cards={playerState.hand} />
+>>>>>>> Stashed changes
                   </Flex>
                 </>
               )}

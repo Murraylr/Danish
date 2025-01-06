@@ -30,4 +30,7 @@ export enum SocketEvents {
     RestartGame = "restartGame",
 
     SetTest = "setTest",
+    JoinTestRoom = "joinTestRoom",
+    loadTestGameFromHistory = "loadTestGameFromHistory",
+    playNextHistoryMove = "playNextHistoryMove",
 }
