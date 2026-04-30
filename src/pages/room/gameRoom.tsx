@@ -228,24 +228,30 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
       <Sider width={"3em"}>
         <MyHeader roomName={roomModel.roomName} />
       </Sider>
-      <Content style={content}>
+      <Content className="game-table" style={content}>
         <Flex vertical style={{ height: "100%" }}>
           <Flex style={{ height: "100%" }}>
             <Flex
               flex={1}
               vertical
               justify="space-between"
-              style={{ height: "100%" }}
+              style={{ height: "100%", padding: "0.6em 0.8em" }}
             >
               {gameState?.gameStarted && playerState?.hand && (
                 <>
-                  <Flex style={section} justify="space-evenly" flex={1}>
+                  <Flex
+                    style={opponentsRow}
+                    justify="space-evenly"
+                    align="flex-start"
+                    wrap="wrap"
+                    gap="1em"
+                  >
                     {playerState.otherPlayers.map((player, index) => (
                       <OpponentDeck player={player} key={index} />
                     ))}
                   </Flex>
 
-                  <Flex justify="center" style={section} flex={1}>
+                  <Flex justify="center" align="center" style={section} flex={1}>
                     <PlayArea style={{}} />
                   </Flex>
                   <Flex justify="center" style={section} flex={2}>
@@ -338,13 +344,20 @@ const GameRoom: React.FC<GameRoomProps> = ({}) => {
 const content: React.CSSProperties = {
   backgroundImage: "url('/images/green-felt.jpg')",
   backgroundSize: "cover",
-  color: "#EEE",
-  textShadow: "1px 1px 1px #000",
+  backgroundPosition: "center",
+  color: "#f5e9c8",
+  textShadow: "1px 1px 2px rgba(0, 0, 0, 0.7)",
 };
 
 const section: React.CSSProperties = {
   flex: 1,
   width: "100%",
+};
+
+const opponentsRow: React.CSSProperties = {
+  flex: 1,
+  width: "100%",
+  paddingTop: "0.6em",
 };
 
 export default GameRoom;

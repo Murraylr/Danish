@@ -8,43 +8,52 @@ interface Props {
 }
 
 const DownFacingCardDeck: React.FC<Props> = ({ bestCards, blindCards }) => {
-  // Implement your component logic here
+  const slots = Math.max(blindCards, bestCards, 3);
 
   return (
-    <Flex justify="space-around" style={deckStyle}>
-      {Array.from({ length: blindCards }).map((_, index) => {
-        let style: React.CSSProperties = {
-          ...cardStyle,
-          left: (index - 1) * 4 + "em",
-          zIndex: index,
-        };
+    <Flex justify="center" align="flex-end" gap="0.5em" style={container}>
+      {Array.from({ length: slots }).map((_, index) => {
+        const hasBlind = index < blindCards;
+        const hasBest = index < bestCards;
 
-        return <CardBack key={index} style={style} />;
-      })}
-
-      {Array.from({ length: bestCards }).map((_, index) => {
-        let style: React.CSSProperties = {
-          ...cardStyle,
-          left: ((index - 1) * 4) + 0.5 + "em",
-          zIndex: index,
-        };
-
-        return <CardBack  key={index} style={style} />;
+        return (
+          <div key={index} style={slot}>
+            {hasBlind && <CardBack style={blindStyle} />}
+            {hasBest && <CardBack style={bestStyle} />}
+          </div>
+        );
       })}
     </Flex>
   );
 };
 
-const deckStyle: React.CSSProperties = {
-  position: "relative",
+const container: React.CSSProperties = {
   width: "100%",
   height: "100%",
 };
 
-const cardStyle: React.CSSProperties = {
+const slot: React.CSSProperties = {
+  position: "relative",
+  width: "3em",
+  aspectRatio: "233 / 333",
+};
+
+const blindStyle: React.CSSProperties = {
   position: "absolute",
   width: "100%",
   height: "100%",
+  top: 0,
+  left: 0,
+  zIndex: 1,
+};
+
+const bestStyle: React.CSSProperties = {
+  position: "absolute",
+  width: "100%",
+  height: "100%",
+  top: "-0.6em",
+  left: "0.6em",
+  zIndex: 2,
 };
 
 export default DownFacingCardDeck;

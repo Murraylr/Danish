@@ -5,13 +5,14 @@ interface Props {
 }
 
 const SvgComponent = ({ style }: Props) => (
+  <div className="game-card" style={style}>
   <svg
     xmlns="http://www.w3.org/2000/svg"
     xmlSpace="preserve"
-    width="234"
-    height="333"
+    width="100%"
+    height="100%"
     viewBox="0 0 187.182 266.908"
-    style={style}
+    style={{ display: "block", width: "100%", height: "100%" }}
   >
     <title>{"Red Card Back"}</title>
     <rect
@@ -466,5 +467,6 @@ const SvgComponent = ({ style }: Props) => (
       }}
     />
   </svg>
+  </div>
 );
 export default SvgComponent;
