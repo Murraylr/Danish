@@ -1,6 +1,10 @@
 import store from "../../redux/reduxStore";
 import { State } from "../../redux/state";
 import { SessionStorage } from "../sessionStorage/sessionStorage";
+import { getEventLog, LoggedEvent } from "../eventLog/eventLog";
+import { HistoryEntry } from "../gameManager/gameManager";
+import { ChatMessage } from "../../models/chatMessage";
+import { CardType } from "../../models/card";
 
 export interface DebugExport {
   exportedAt: string;
@@ -13,6 +17,14 @@ export interface DebugExport {
     playerName: string | null;
   };
   redux: State;
+  history: {
+    gameHistory: HistoryEntry[];
+    chatMessages: ChatMessage[];
+    discardPile: CardType[];
+    bottomDiscardPile: CardType[];
+    lastCardsPlayed: CardType[];
+  };
+  eventLog: LoggedEvent[];
   rawHandValues: Array<Record<string, unknown>>;
 }
 
@@ -27,6 +39,7 @@ const safeReadStorage = (): string | null => {
 export const buildDebugExport = (): DebugExport => {
   const reduxState = store.getState() as State;
   const hand = reduxState.playerState?.playerState?.hand ?? [];
+  const gameState = reduxState.gameState;
 
   return {
     exportedAt: new Date().toISOString(),
@@ -42,6 +55,14 @@ export const buildDebugExport = (): DebugExport => {
       playerName: safeReadStorage(),
     },
     redux: reduxState,
+    history: {
+      gameHistory: gameState?.history ?? [],
+      chatMessages: reduxState.messages ?? [],
+      discardPile: gameState?.discardPile ?? [],
+      bottomDiscardPile: gameState?.bottomDiscardPile ?? [],
+      lastCardsPlayed: gameState?.lastCardsPlayed ?? [],
+    },
+    eventLog: getEventLog(),
     rawHandValues: hand.map((card, index) => ({
       index,
       card: (card as { card?: unknown })?.card,
