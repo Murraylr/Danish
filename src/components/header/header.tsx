@@ -8,11 +8,13 @@ import {
   ReloadOutlined,
   ExportOutlined,
   QuestionCircleOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import DeveloperForm from "../developerForm/developerForm";
 import socket from "../../services/socket.io/socket.io";
 import { SocketEvents } from "../../models/socketEvents";
 import { useNavigate, useNavigation } from "react-router-dom";
+import { exportGameStateAsJson } from "../../services/exportGame/exportGame";
 
 const { Header } = Layout;
 type MenuItem = Required<MenuProps>["items"][number];
@@ -68,6 +70,13 @@ const MyHeader: React.FC<HeaderProps> = ({ roomName }) => {
         icon: <ExperimentOutlined />,
         style: itemStyle,
         onClick: () => setDeveloperForm(true),
+      },
+      {
+        label: "Export Game",
+        key: "exportGame",
+        icon: <DownloadOutlined />,
+        style: itemStyle,
+        onClick: () => exportGameStateAsJson(),
       },
     ];
   }, [collapsed]);
