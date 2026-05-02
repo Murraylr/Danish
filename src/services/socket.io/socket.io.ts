@@ -16,6 +16,7 @@ import { CannotPlayCard } from "../../models/cannotPlayCardModel";
 import { winnerStateActions } from "../../redux/winnerStateSlice/winnerStateSlice";
 import { OtherPlayer } from "../../models/otherPlayer";
 import { Room, RoomState } from "../../models/room";
+import { logEvent } from "../eventLog/eventLog";
 const isProd = process.env.NODE_ENV === "production";
 
 
@@ -27,7 +28,15 @@ const opts: any = {
 
 const env = process.env.REACT_APP_ENVIRONMENT;
 
-const socket = process.env.REACT_APP_ENVIRONMENT === 'dev'? io('http://localhost:3000', opts) : io(opts);
+const rawSocket = process.env.REACT_APP_ENVIRONMENT === 'dev'? io('http://localhost:3000', opts) : io(opts);
+
+const originalEmit = rawSocket.emit.bind(rawSocket);
+rawSocket.emit = ((event: string, ...args: any[]) => {
+  logEvent("out", event, args.length <= 1 ? args[0] : args);
+  return originalEmit(event, ...args);
+}) as typeof rawSocket.emit;
+
+const socket = rawSocket;
 
 // export the function to connect and use socket IO:
 export const startSocketIO = (store: EnhancedStore<any, any, any>) => {
@@ -36,16 +45,20 @@ export const startSocketIO = (store: EnhancedStore<any, any, any>) => {
 
   socket.on("connect", (s) => {
     console.log("connected to server.");
+    logEvent("in", "connect");
 
-    socket.on(SocketEvents.MessageSent, (message: ChatMessage[]) =>
-      dispatch(messageStateActions.messageSent(message))
-    );
+    socket.on(SocketEvents.MessageSent, (message: ChatMessage[]) => {
+      logEvent("in", SocketEvents.MessageSent, message);
+      dispatch(messageStateActions.messageSent(message));
+    });
 
     socket.on(SocketEvents.StartGame, (gameState: GameState) => {
+      logEvent("in", SocketEvents.StartGame, gameState);
       dispatch(gameStateActions.setGameState(gameState));
     });
 
     socket.on(SocketEvents.RoomUpdated, (room: RoomState) => {
+      logEvent("in", SocketEvents.RoomUpdated, room);
       const getMeModel: GetMeModel = {
         playerId: room.myId,
         roomName: room.roomName,
@@ -55,15 +68,22 @@ export const startSocketIO = (store: EnhancedStore<any, any, any>) => {
     });
 
     socket.on(SocketEvents.GameUpdate, (gameState: GameState) => {
+      logEvent("in", SocketEvents.GameUpdate, gameState);
       dispatch(gameStateActions.setGameState(gameState));
     });
 
     socket.on(SocketEvents.PlayerUpdate, (playerState: PlayerState) => {
+      logEvent("in", SocketEvents.PlayerUpdate, playerState);
       dispatch(playerStateActions.setPlayerState(playerState));
     });
 
     socket.on(SocketEvents.PlayerWon, (playerWonModel: PlayerWonModel) => {
+      logEvent("in", SocketEvents.PlayerWon, playerWonModel);
       dispatch(winnerStateActions.addWinner(playerWonModel.player.playerId));
+    });
+
+    socket.on(SocketEvents.CannotPlayCard, (payload: CannotPlayCard) => {
+      logEvent("in", SocketEvents.CannotPlayCard, payload);
     });
 
     return () => {
@@ -72,6 +92,7 @@ export const startSocketIO = (store: EnhancedStore<any, any, any>) => {
       socket.off(SocketEvents.GameUpdate);
       socket.off(SocketEvents.PlayerUpdate);
       socket.off(SocketEvents.RoomUpdated);
+      socket.off(SocketEvents.CannotPlayCard);
     };
   });
 };
