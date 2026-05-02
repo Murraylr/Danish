@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import CardBack from "../cardImages/cardBack";
 import DownFacingCardDeck from "../downFacingCardDeck/downFacingCardDeck";
 import { Flex } from "antd";
@@ -10,73 +10,95 @@ interface OpponentDeckProps {
   player: OtherPlayer;
 }
 
+const CARD_HEIGHT_EM = 4.8;
+const CARD_ASPECT = 233 / 333;
+
 const OpponentDeck: React.FC<OpponentDeckProps> = ({ player }) => {
   const gameState = selectGameState();
   const gameFunctions = useGameStateService();
 
+  const isPlaying = gameState.gameStarted && gameFunctions.isPlayerTurn(player);
+
   let status: string;
   if (gameState.gameStarted) {
-    status = gameFunctions.isPlayerTurn(player) ? "Playing" : "";
+    status = isPlaying ? "Playing" : "";
   } else {
     status = player.isReady ? "Ready" : "Not Ready";
   }
 
+  const fan = useMemo(() => {
+    const remPx = 16;
+    const cardWidthPx = CARD_HEIGHT_EM * CARD_ASPECT * remPx;
+    const n = player.cardsHeld;
+    const maxFanPx = 11 * remPx;
+    const maxStep = cardWidthPx * 0.55;
+    const minStep = 6;
+    const fitStep = n > 1 ? (maxFanPx - cardWidthPx) / (n - 1) : 0;
+    const step = Math.max(minStep, Math.min(maxStep, fitStep));
+    const totalWidth = cardWidthPx + step * Math.max(n - 1, 0);
+    return { cardWidthPx, step, totalWidth };
+  }, [player.cardsHeld]);
+
   return (
     <div style={container}>
-      <h3 style={headerStyle}>
-        {player.name} {!!status ? `(${status})` : ""}
-      </h3>
-      <Flex style={downCardContainer} flex={1}>
+      <span className={`player-plate${isPlaying ? " active" : ""}`}>
+        <span>{player.name}</span>
+        {!!status && <span className="plate-status">{status}</span>}
+      </span>
+
+      <Flex justify="center" style={downCardContainer}>
         <DownFacingCardDeck
           bestCards={player.bestCards}
           blindCards={player.blindCards}
         />
       </Flex>
-      <Flex style={deckStyle} flex={2}>
-        {Array.from({ length: player.cardsHeld }).map((_, index) => {
-          let style: React.CSSProperties = {
-            ...cardStyle,
-            left: (index + 1) * 0.7 - (player.cardsHeld / 2) * 0.7 + "em",
-            zIndex: index,
-          };
 
-          return <CardBack key={index} style={style} />;
-        })}
-      </Flex>
+      <div style={handContainer}>
+        <div
+          style={{
+            position: "relative",
+            width: `${fan.totalWidth}px`,
+            height: `${CARD_HEIGHT_EM}em`,
+            maxWidth: "100%",
+          }}
+        >
+          {Array.from({ length: player.cardsHeld }).map((_, index) => {
+            const cardStyle: React.CSSProperties = {
+              position: "absolute",
+              width: `${fan.cardWidthPx}px`,
+              aspectRatio: `${CARD_ASPECT}`,
+              left: `${index * fan.step}px`,
+              top: 0,
+              borderRadius: "6px",
+            };
+            return <CardBack key={index} style={cardStyle} />;
+          })}
+        </div>
+      </div>
     </div>
   );
-};
-
-const headerStyle: React.CSSProperties = {
-  marginTop: "0.3em",
-  marginBottom: "0.3em",
-  width: "100%",
 };
 
 const container: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
-  flexBasis: "min-content",
-  width: "100%",
-  textAlign: "center",
+  gap: "0.4em",
+  flex: 1,
+  minWidth: "10em",
+  padding: "0.4em",
 };
 
 const downCardContainer: React.CSSProperties = {
   width: "100%",
-  height: "100%",
+  height: "5.5em",
 };
 
-const deckStyle: React.CSSProperties = {
-  position: "relative",
-  height: "100%",
+const handContainer: React.CSSProperties = {
   width: "100%",
-};
-
-const cardStyle: React.CSSProperties = {
-  position: "absolute",
-  width: "100%",
-  height: "100%",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "flex-start",
 };
 
 export default OpponentDeck;
